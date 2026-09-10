@@ -405,7 +405,7 @@ const store={
   async init(){
     let db=null;
     try{ db=(window.claude&&typeof window.claude.use==='function')?await window.claude.use('db'):null; }catch(e){ db=null; }
-    if(db){ this.db=db; this.mode='cloud'; this.subscribe(); }
+    if(db){ this.db=db; this.mode='cloud'; this.subscribe(); this.offerMigration(); }
     else{ this.mode='local'; this.loadLocal(); COLS.forEach(c=>this.loaded[c]=true); }
     try{ this.downloads=(window.claude&&typeof window.claude.use==='function')?await window.claude.use('downloads'):null; }catch(e){ this.downloads=null; }
     renderSync(); render();
@@ -415,8 +415,23 @@ const store={
       this.db.collection(col).onSnapshot(snap=>{
         this.data[col]=snap.docs.filter(d=>d.exists).map(d=>Object.assign({id:d.id},d.data()));
         this.loaded[col]=true; render();
+        if(COLS.every(c=>this.loaded[c])&&this._onLoaded){ const f=this._onLoaded; this._onLoaded=null; f(); }
       },err=>{ toast('동기화가 끊겼어요. 페이지를 새로고침해 주세요.'); });
     }
+  },
+  // 클라우드 모드로 열렸는데 서버가 비어 있고 이 브라우저에 예전 데이터가 남아 있으면 한 번에 옮겨 준다.
+  async offerMigration(){
+    let local=null; try{ local=JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){}
+    const cnt=o=>o?COLS.reduce((n,c)=>n+(Array.isArray(o[c])?o[c].length:0),0):0;
+    if(!cnt(local)) return;
+    if(!COLS.every(c=>this.loaded[c])) await new Promise(res=>{ this._onLoaded=res; });
+    if(cnt(this.data)) return;
+    let asked=false; try{ asked=sessionStorage.getItem('migrate-asked')==='1'; }catch(e){}
+    if(asked) return;
+    try{ sessionStorage.setItem('migrate-asked','1'); }catch(e){}
+    const parts=[['projects','프로젝트'],['tasks','할 일'],['materials','자재'],['events','일정'],['vendors','업체']].filter(([c])=>local[c]&&local[c].length).map(([c,l])=>`${l} ${local[c].length}건`).join(', ');
+    if(!await askConfirm(`이 브라우저에 저장된 데이터(${parts})가 있어요.\n클라우드로 옮겨서 모든 기기에서 볼 수 있게 할까요?`,'클라우드로 옮기기',true)) return;
+    try{ await this.replaceAll(local); toast('클라우드로 옮겼어요.'); }catch(e){ toast('옮기지 못했어요. 잠시 후 다시 시도해 주세요.'); }
   },
   loadLocal(){ try{ const raw=localStorage.getItem(LS_KEY); if(raw){ const p=JSON.parse(raw); for(const c of COLS) if(Array.isArray(p[c])) this.data[c]=p[c]; } }catch(e){} },
   saveLocal(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(this.data)); }catch(e){ toast('이 브라우저에 저장하지 못했어요.'); } },
@@ -737,10 +752,10 @@ closeOnBackdrop(cfm);
 let cfmResolve=null;
 cfm.addEventListener('click',e=>{ const b=e.target.closest('[data-cfm]'); if(!b) return; cfm.returnValue=b.dataset.cfm; cfm.close(); });
 cfm.addEventListener('close',()=>{ const r=cfmResolve; cfmResolve=null; if(r) r(cfm.returnValue==='1'); });
-function askConfirm(msg,okLabel){
+function askConfirm(msg,okLabel,primary){
   return new Promise(res=>{
     document.getElementById('cfmMsg').textContent=msg;
-    document.getElementById('cfmOk').textContent=okLabel||'삭제';
+    const ok=document.getElementById('cfmOk'); ok.textContent=okLabel||'삭제'; ok.className='btn '+(primary?'primary':'danger');
     cfm.returnValue=''; cfmResolve=res; cfm.showModal(); document.getElementById('cfmOk').focus();
   });
 }
