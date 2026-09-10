@@ -111,14 +111,34 @@ a{color:var(--accent)}
 .empty b{display:block;color:var(--ink);font-weight:500;margin-bottom:4px}
 
 .agenda-row{grid-template-columns:76px minmax(0,1fr) auto}
-.proj-row{grid-template-columns:minmax(0,1fr) 170px 130px auto}
-.proj-row .t{white-space:normal}
 .row .pill{justify-self:start}
 .bar{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--ok);border-radius:3px}
-.proj-row .prog{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:var(--muted);font-family:var(--mono);font-variant-numeric:tabular-nums}
-.proj-row .prog-l{display:flex;justify-content:space-between;gap:8px}
-.proj-row .prog-l b{color:var(--ink);font-weight:500}
+
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:start;margin-bottom:22px}
+.col{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--surface);--c:var(--gray);--cs:var(--gray-soft)}
+@supports (background:color-mix(in srgb,red 50%,blue)){
+  .col{background:color-mix(in srgb,var(--cs) 42%,var(--surface));border-color:color-mix(in srgb,var(--c) 22%,var(--line))}
+}
+.col-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 4px 4px}
+.col-h .cnt{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.card{display:flex;flex-direction:column;gap:8px;width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:9px;background:var(--surface);cursor:pointer;text-align:left;color:inherit}
+.card:hover{border-color:var(--line-strong);box-shadow:0 1px 2px rgba(23,33,43,.06)}
+.card .t{display:flex;align-items:flex-start;gap:7px;font-weight:600;line-height:1.35;min-width:0}
+.card .t svg{width:15px;height:15px;flex:none;margin-top:2px;color:var(--muted)}
+.card .t span{min-width:0;overflow-wrap:anywhere}
+.card .m{color:var(--muted);font-size:12px;margin:-4px 0 0 22px}
+.card .date{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.card .date.crit{color:var(--crit);font-weight:500}
+.card .date.soon{color:var(--warn);font-weight:500}
+.card .foot{display:flex;align-items:center;gap:8px}
+.card .foot .pct{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
+.card .bar{width:100%}
+.card.is-done .t{color:var(--muted)}
+.col-add{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border:1px dashed var(--line-strong);border-radius:9px;background:transparent;color:var(--c);cursor:pointer;font-weight:500;font-size:13px}
+.col-add:hover{background:var(--surface)}
+.col-add svg{width:14px;height:14px}
+.col-empty{padding:14px 8px;text-align:center;color:var(--muted);font-size:12.5px}
 .home-cols{margin-top:20px}
 .task-row{grid-template-columns:auto minmax(0,1fr) auto;cursor:pointer}
 .task-row .chk{width:18px;height:18px;margin:0;accent-color:var(--ok);cursor:pointer}
@@ -154,9 +174,12 @@ a{color:var(--accent)}
 .filters input{flex:1 1 180px}
 .filters select{flex:0 1 auto}
 
-.mat-head,.mat-row{display:grid;grid-template-columns:minmax(180px,1.6fr) minmax(120px,1fr) 96px 100px 104px 104px 90px;gap:12px;align-items:center}
+.mat-head,.mat-row{display:grid;grid-template-columns:36px minmax(180px,1.6fr) minmax(120px,1fr) 96px 100px 104px 104px 90px;gap:12px;align-items:center}
 .mat-head{padding:9px 16px;font-size:11.5px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;border-bottom:1px solid var(--line);font-weight:500}
-.mat-row{padding:10px 16px}
+.mat-row{padding:10px 16px;cursor:pointer}
+.mat-row .chk{width:18px;height:18px;margin:0;accent-color:var(--ok);cursor:pointer;justify-self:center}
+.mat-row.done .name b{color:var(--muted)}
+.mat-head .c{text-align:center}
 .mat-row .name{display:flex;flex-direction:column;min-width:0}
 .mat-row .name b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mat-row .name small{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -226,6 +249,7 @@ dialog::backdrop{background:rgba(10,16,22,.5)}
 
 @media (max-width:1100px){
   .cols{grid-template-columns:1fr}
+  .board{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cal-wrap{grid-template-columns:1fr}
   .day-panel{position:static}
 }
@@ -239,13 +263,11 @@ dialog::backdrop{background:rgba(10,16,22,.5)}
   .tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px 7px;border:0;background:transparent;color:var(--muted);font-size:11px;cursor:pointer}
   .tab svg{width:20px;height:20px}
   .tab[aria-current="page"]{color:var(--accent)}
-  .proj-row{grid-template-columns:minmax(0,1fr) auto;row-gap:6px}
-  .proj-row .prog{grid-column:1/-1;order:10}
-  .proj-row .date{display:none}
+  .board{grid-template-columns:1fr}
   .mat-head{display:none}
-  .mat-row{grid-template-columns:minmax(0,1fr) auto;row-gap:4px}
+  .mat-row{grid-template-columns:auto minmax(0,1fr);row-gap:4px}
   .mat-row .hide-m{display:none}
-  .mat-row .mob{display:flex;grid-column:1/-1;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:12px;font-family:var(--mono)}
+  .mat-row .mob{display:flex;grid-column:2;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:12px;font-family:var(--mono)}
   .cell{min-height:56px;padding:5px 4px}
   .cell .chip{display:none}
   .cell .dots{display:flex}
@@ -292,7 +314,9 @@ const CATEGORIES=['PC','카메라','렌즈','조명','프레임/기구','소프�
 const STAGES=['요청 전','견적 요청','견적 접수','발주 완료','입고 완료'];
 const STAGE_TONE={'요청 전':'gray','견적 요청':'warn','견적 접수':'info','발주 완료':'accent','입고 완료':'ok'};
 const PRIORITIES=['높음','보통','낮음'];
-const PROJECT_STATUS=['진행 중','대기','완료'];
+const PROJECT_STATUS=['검토 중','진행 중','진행대기','완료'];
+const PROJECT_TONE={'검토 중':'info','진행 중':'warn','진행대기':'crit','완료':'ok'};
+const PROJECT_DESC={'검토 중':'검토·견적 단계','진행 중':'진행 중인 과제','진행대기':'착수 대기','완료':'완료된 과제'};
 const EVENT_TYPES=['회의','납기','출장','검수','기타'];
 const EVENT_TONE={'회의':'info','납기':'crit','출장':'warn','검수':'accent','기타':'gray'};
 const DOW=['일','월','화','수','목','금','토'];
@@ -310,6 +334,7 @@ const ICON={
   ul:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M4 20h16"/></svg>',
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+  target:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/></svg>',
 };
 document.querySelectorAll('[data-action]').forEach(b=>{ b.innerHTML=b.innerHTML.replace(/\$\{ICON\.(\w+)\}/g,(_,k)=>ICON[k]||''); });
 
@@ -368,6 +393,8 @@ const store={
 const D=store.data;
 const projById=id=>D.projects.find(p=>p.id===id);
 const projName=id=>{const p=projById(id);return p?p.name:(id?'(삭제된 프로젝트)':'미배정');};
+const projStatus=p=>p.status==='대기'?'진행대기':(PROJECT_STATUS.includes(p.status)?p.status:'진행 중');
+const longDate=iso=>iso?parseISO(iso).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}):'';
 const isOpen=m=>m.stage!=='입고 완료';
 const etaState=m=>{ if(!m.etaDate||!isOpen(m)) return ''; const dd=diffDays(m.etaDate,todayISO()); return dd<0?'crit':(dd<=7?'soon':''); };
 const dueState=t=>{ if(!t.dueDate||t.done) return ''; const dd=diffDays(t.dueDate,todayISO()); return dd<0?'crit':(dd<=3?'soon':''); };
@@ -402,21 +429,35 @@ function renderHome(){
       <span class="date ${it.tone==='crit'?'crit':(it.days<=2?'soon':'')}">${it.days===0?'오늘':(it.days===1?'내일':shortDate(it.date))}</span>
       <span class="t">${esc(it.label)}</span><span class="pill tone-${it.tone}">${esc(it.kind)}</span></button>`).join('')
     :`<div class="empty"><b>앞으로 2주간 잡힌 일정이 없어요</b>일정을 추가하거나 자재에 입고예정일, 할 일에 마감일을 넣어 보세요.</div>`;
-  const projs=D.projects.filter(p=>p.status!=='완료');
-  const projList=projs.length?projs.map(p=>{
+  const projects=D.projects.slice().sort((a,b)=>((a.dueDate||'9')<(b.dueDate||'9')?-1:(a.dueDate||'9')>(b.dueDate||'9')?1:0)||(a.createdAt||'').localeCompare(b.createdAt||''));
+  const board=PROJECT_STATUS.map(st=>{
+    const list=projects.filter(p=>projStatus(p)===st), tone=PROJECT_TONE[st];
+    const cards=list.map(p=>{
       const pr=projectProgress(p);
       const next=pr.ms.filter(m=>isOpen(m)&&m.etaDate).sort((a,b)=>a.etaDate<b.etaDate?-1:1)[0];
-      return `<button class="row proj-row" data-action="goto-project" data-project="${p.id}">
-        <span class="t">${esc(p.name)}<br><span class="m">${esc(p.client||'')}</span></span>
-        ${progressHTML(pr)}
-        <span class="date ${next?etaState(next):''}">${next?'다음 입고 '+shortDate(next.etaDate):''}</span>
-        <span class="pill tone-${p.status==='진행 중'?'accent':'gray'}">${esc(p.status)}</span></button>`;}).join('')
-    :`<div class="empty"><b>등록된 프로젝트가 없어요</b>프로젝트 탭에서 과제를 추가해 시작하세요.</div>`;
-  return `<div class="topbar"><div><h1>현황</h1><div class="sub">${new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})}</div></div>
+      const done=st==='완료';
+      let dateHTML='';
+      if(p.dueDate){ const dd=diffDays(p.dueDate,today); dateHTML=`<span class="date ${done?'':(dd<0?'crit':(dd<=7?'soon':''))}">${longDate(p.dueDate)}</span>`; }
+      else if(next&&!done) dateHTML=`<span class="date ${etaState(next)}">다음 입고 ${shortDate(next.etaDate)}</span>`;
+      const inProg=st==='진행 중';
+      return `<button class="card ${done?'is-done':''}" data-action="goto-project" data-project="${p.id}">
+        <span class="t">${ICON.target}<span>${esc(p.name)}</span></span>
+        ${p.client?`<span class="m">${esc(p.client)}</span>`:''}
+        ${dateHTML}
+        <span class="foot"><span class="pill tone-${tone}">${esc(st)}${inProg?' · '+(pr.total?pr.pct+'%':'0%'):''}</span>${inProg&&pr.total?`<span class="pct">${pr.done}/${pr.total}</span>`:''}</span>
+        ${inProg?`<span class="bar"><i style="width:${pr.pct}%"></i></span>`:''}
+      </button>`;}).join('');
+    return `<section class="col" style="--c:var(--${tone});--cs:var(--${tone}-soft)" aria-label="${esc(st)}">
+      <div class="col-h"><span class="pill tone-${tone}">${esc(st)}</span><span class="cnt">${list.length}건</span></div>
+      ${cards||`<div class="col-empty">${PROJECT_DESC[st]} 없음</div>`}
+      <button class="col-add" data-action="add-project" data-status="${esc(st)}">${ICON.plus}새 프로젝트</button>
+    </section>`;
+  }).join('');
+  return `<div class="topbar"><div><h1>현황</h1><div class="sub">${new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})} · 프로젝트 ${D.projects.length}건</div></div>
     <div class="actions"><button class="btn" data-action="add-task">${ICON.plus}할 일</button><button class="btn" data-action="add-material">${ICON.plus}자재</button><button class="btn primary" data-action="add-event" data-day="${ui.selDay}">${ICON.plus}일정</button></div></div>
+    <div class="board">${board}</div>
     ${calendarHTML()}
-    <div class="cols home-cols">
-      <div class="panel"><div class="panel-h"><h2>프로젝트별 진행현황</h2><span class="cnt">${projs.length}건</span></div><div class="list">${projList}</div></div>
+    <div class="home-cols">
       <div class="panel"><div class="panel-h"><h2>앞으로 2주</h2><span class="cnt">${items.length}건</span></div><div class="list">${agenda}</div></div>
     </div>`;
 }
@@ -439,14 +480,14 @@ function taskRowHTML(t){
 function renderProjects(){
   const today=todayISO();
   const sortTasks=ts=>ts.slice().sort((a,b)=>(a.done-b.done)||((a.dueDate||'9')<(b.dueDate||'9')?-1:1));
-  const sections=D.projects.slice().sort((a,b)=>(PROJECT_STATUS.indexOf(a.status)-PROJECT_STATUS.indexOf(b.status))||(a.client||'').localeCompare(b.client||'')).map(p=>{
-    const pr=projectProgress(p);
+  const sections=D.projects.slice().sort((a,b)=>(PROJECT_STATUS.indexOf(projStatus(a))-PROJECT_STATUS.indexOf(projStatus(b)))||(a.client||'').localeCompare(b.client||'')).map(p=>{
+    const pr=projectProgress(p), st=projStatus(p);
     const next=pr.ms.filter(m=>isOpen(m)&&m.etaDate).sort((a,b)=>a.etaDate<b.etaDate?-1:1)[0];
     const shown=sortTasks(ui.showDone?pr.ts:pr.ts.filter(t=>!t.done)), hidden=pr.ts.length-shown.length;
-    return `<section class="panel proj-sec ${p.status==='완료'?'is-done':''}">
+    return `<section class="panel proj-sec ${st==='완료'?'is-done':''}">
       <div class="proj-head">
-        <div class="proj-title"><h2>${esc(p.name)}</h2><span class="m">${esc(p.client||'')}${p.notes?' · '+esc(p.notes):''}</span></div>
-        <span class="pill tone-${p.status==='진행 중'?'accent':(p.status==='완료'?'ok':'gray')}">${esc(p.status)}</span>
+        <div class="proj-title"><h2>${esc(p.name)}</h2><span class="m">${[p.client,p.dueDate?'목표 '+longDate(p.dueDate):'',p.notes].filter(Boolean).map(esc).join(' · ')}</span></div>
+        <span class="pill tone-${PROJECT_TONE[st]}">${esc(st)}${st==='진행 중'&&pr.total?' · '+pr.pct+'%':''}</span>
         <div class="proj-tools"><button class="btn sm ghost" data-action="edit-project" data-id="${p.id}" aria-label="프로젝트 수정">${ICON.edit}</button><button class="btn sm" data-action="add-task" data-project="${p.id}">${ICON.plus}할 일</button></div>
       </div>
       <div class="proj-meta">${progressHTML(pr)}
@@ -498,7 +539,8 @@ function renderMaterials(){
     const est=ms.reduce((s,m)=>s+(Number(m.estCost)||0),0);
     return `<div class="mat-group"><span>${esc(projName(k))}</span><span class="mono">${ms.length}건${est?' · 예상 '+fmtKRW(est):''}</span></div>`+ms.map(m=>{
       const es=etaState(m);
-      return `<button class="row mat-row" data-action="edit-material" data-id="${m.id}">
+      return `<div class="row mat-row ${isOpen(m)?'':'done'}" data-action="edit-material" data-id="${m.id}" role="button" tabindex="0">
+        <input type="checkbox" class="chk" data-action="toggle-material" data-id="${m.id}" ${isOpen(m)?'':'checked'} aria-label="입고 완료" title="${isOpen(m)?'입고 완료로 표시':'미입고로 되돌리기'}">
         <span class="name"><b>${esc(m.name)}</b><small>${esc(m.category||'')}${m.vendor?' · '+esc(m.vendor.replace(/^https?:\/\//,'').split('/')[0]):''}${m.priority==='높음'?' · <span style="color:var(--crit)">우선</span>':''}</small></span>
         <span class="hide-m"><span class="pill tone-${STAGE_TONE[m.stage]||'gray'}">${esc(m.stage||'요청 전')}</span></span>
         <span class="num hide-m">${m.qty?m.qty+'개':''}</span>
@@ -507,12 +549,12 @@ function renderMaterials(){
         <span class="date hide-m ${es}">${m.etaDate?shortDate(m.etaDate):''}</span>
         <span class="date hide-m" style="color:var(--ok)">${m.receivedDate?shortDate(m.receivedDate):''}</span>
         <span class="mob"><span class="pill tone-${STAGE_TONE[m.stage]||'gray'}">${esc(m.stage||'요청 전')}</span>${m.qty?'<span>'+m.qty+'개</span>':''}${m.etaDate?'<span class="'+(es?'date '+es:'')+'">입고 '+shortDate(m.etaDate)+'</span>':''}${m.estCost?'<span>'+fmtKRW(m.estCost)+'</span>':''}</span>
-      </button>`;}).join('');
+      </div>`;}).join('');
   }).join('');
   const projOpts=D.projects.map(p=>`<option value="${p.id}" ${f.project===p.id?'selected':''}>${esc(p.name)}</option>`).join('');
   const stageOpts=[['','모든 단계'],['__open','미입고만'],['__quoting','견적 대기'],['__week','이번 주 입고'],['__overdue','입고 지연']].concat(STAGES.map(s=>[s,s])).map(([v,l])=>`<option value="${v}" ${f.stage===v?'selected':''}>${l}</option>`).join('');
   const open=D.materials.filter(isOpen).length;
-  return `<div class="topbar"><div><h1>자재</h1><div class="sub">전체 ${D.materials.length}건 · 미입고 ${open}건</div></div>
+  return `<div class="topbar"><div><h1>자재</h1><div class="sub">전체 ${D.materials.length}건 · 미입고 ${open}건 · 입고되면 왼쪽 체크박스를 눌러 주세요</div></div>
     <div class="actions"><button class="btn primary" data-action="add-material">${ICON.plus}자재</button></div></div>
     <div class="filters">
       <select id="fProject" data-filter="project"><option value="">모든 프로젝트</option>${projOpts}</select>
@@ -520,7 +562,7 @@ function renderMaterials(){
       <input id="fQ" type="search" data-filter="q" placeholder="자재명, 분류, 구매처 검색" value="${esc(f.q)}">
     </div>
     <div class="panel">
-      <div class="mat-head"><span>자재</span><span>단계</span><span style="text-align:right">수량</span><span style="text-align:right">예상비용</span><span>발주일</span><span>입고예정</span><span>입고완료</span></div>
+      <div class="mat-head"><span class="c">입고</span><span>자재</span><span>단계</span><span style="text-align:right">수량</span><span style="text-align:right">예상비용</span><span>발주일</span><span>입고예정</span><span>입고일</span></div>
       ${body||`<div class="empty"><b>${D.materials.length?'조건에 맞는 자재가 없어요':'등록된 자재가 없어요'}</b>${D.materials.length?'필터를 바꿔 보세요.':'PC, 카메라, 렌즈처럼 프로젝트에 필요한 자재를 추가해 두면 견적부터 입고까지 놓치지 않아요.'}</div>`}
     </div>`;
 }
@@ -594,13 +636,14 @@ form.addEventListener('submit',async e=>{
 });
 dlg.addEventListener('close',()=>{ dlgCtx=null; });
 
-function projectForm(p){
-  const isNew=!p; p=p||{};
+function projectForm(p,preset){
+  const isNew=!p; p=p||Object.assign({},preset||{});
   openForm({title:isNew?'프로젝트 추가':'프로젝트 수정',
     fields:[
       {key:'name',label:'과제명',value:p.name,required:true,span:true,placeholder:'예: IT 정면시야각 검사기 (#10, #11)'},
       {key:'client',label:'고객사',value:p.client,suggest:vendorNames('고객사'),placeholder:'업체 탭에 등록한 고객사가 제안돼요'},
-      {key:'status',label:'상태',type:'select',options:PROJECT_STATUS,value:p.status||'진행 중'},
+      {key:'status',label:'상태',type:'select',options:PROJECT_STATUS,value:projStatus(p)},
+      {key:'dueDate',label:'목표일 (납기)',type:'date',value:p.dueDate},
       {key:'notes',label:'메모',type:'textarea',value:p.notes,span:true}],
     onSubmit:async v=>{ await store.put('projects',Object.assign({},p,v,{id:p.id||uid(),createdAt:p.createdAt||new Date().toISOString()})); toast(isNew?'프로젝트를 추가했어요.':'저장했어요.'); },
     onDelete:isNew?null:async()=>{
@@ -684,6 +727,15 @@ function taskForm(t,preset){
     onDelete:isNew?null:async()=>{ if(!confirm(`"${t.title}" 할 일을 삭제할까요?`)) return; await store.remove('tasks',t.id); dlg.close(); toast('삭제했어요.'); }
   });
 }
+async function toggleMaterial(id){
+  const m=D.materials.find(x=>x.id===id); if(!m) return;
+  const receive=isOpen(m);
+  const next=receive
+    ?Object.assign({},m,{prevStage:m.stage||'요청 전',stage:'입고 완료',receivedDate:m.receivedDate||todayISO()})
+    :Object.assign({},m,{stage:(m.prevStage&&m.prevStage!=='입고 완료')?m.prevStage:'발주 완료',receivedDate:''});
+  try{ await store.put('materials',next); toast(receive?`"${m.name}" 입고 완료로 표시했어요.`:`"${m.name}" 미입고로 되돌렸어요.`); }
+  catch(err){ toast('저장하지 못했어요. 잠시 후 다시 시도해 주세요.'); render(); }
+}
 async function toggleTask(id){
   const t=D.tasks.find(x=>x.id===id); if(!t) return;
   const done=!t.done;
@@ -724,10 +776,11 @@ document.addEventListener('click',e=>{
     case 'noop': e.stopPropagation(); break;
     case 'edit-task': { if(e.target.closest('.chk')) break; const t=D.tasks.find(x=>x.id===id); if(t) taskForm(t); break; }
     case 'toggle-task': toggleTask(id); break;
-    case 'add-project': projectForm(null); break;
+    case 'add-project': projectForm(null,{status:el.dataset.status||'진행 중'}); break;
     case 'edit-project': projectForm(projById(id)); break;
     case 'add-material': materialForm(null); break;
-    case 'edit-material': { const m=D.materials.find(x=>x.id===id); if(m) materialForm(m); break; }
+    case 'edit-material': { if(e.target.closest('.chk')) break; const m=D.materials.find(x=>x.id===id); if(m) materialForm(m); break; }
+    case 'toggle-material': toggleMaterial(id); break;
     case 'add-event': eventForm(null,{start:el.dataset.day||ui.selDay}); break;
     case 'edit-event': { const ev=D.events.find(x=>x.id===id); if(ev) eventForm(ev); break; }
     case 'cal-prev': ui.cal.m--; if(ui.cal.m<0){ui.cal.m=11;ui.cal.y--;} render(); break;
