@@ -166,7 +166,15 @@ a{color:var(--accent)}
 .ev-row .name{display:flex;flex-direction:column;min-width:0}
 .ev-row .name b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ev-row .name small{color:var(--muted);font-size:12px}
-.back{margin-bottom:8px}
+dialog.pdlg{width:min(960px,calc(100vw - 32px))}
+.pdlg-h{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 52px 12px 20px;border-bottom:1px solid var(--line)}
+.pdlg-h .close{position:absolute;top:12px;right:12px}
+.pdlg-h h2{font-size:17px;letter-spacing:-.01em}
+.pdlg-h .sub{color:var(--muted);font-size:12.5px;margin-top:2px}
+.pdlg-h .actions{margin-left:auto}
+.pdlg-b{padding:16px 20px 20px;max-height:calc(100vh - 150px);overflow:auto}
+.pdlg .detail-cols{margin-top:16px}
+.pdlg .detail-events{margin-top:16px}
 .home-board h2{font-size:15px;margin-bottom:10px}
 .task-row{grid-template-columns:auto minmax(0,1fr) auto;cursor:pointer}
 .task-row .chk{width:18px;height:18px;margin:0;accent-color:var(--ok);cursor:pointer}
@@ -367,6 +375,7 @@ dialog.cfm{width:min(380px,calc(100vw - 32px))}
   </nav>
 </div>
 <dialog id="dlg"><form id="dlgForm" novalidate></form></dialog>
+<dialog id="pdlg" class="pdlg" aria-label="프로젝트 상세"></dialog>
 <dialog id="cfm" class="cfm"><div class="cfm-b"><p id="cfmMsg"></p><div class="r"><button type="button" class="btn" data-cfm="0">취소</button><button type="button" class="btn danger" data-cfm="1" id="cfmOk">삭제</button></div></div></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -507,13 +516,12 @@ const vendorNames=type=>{ const s=new Set(); for(const v of D.vendors) if(!type|
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2600); }
 
 function render(){
-  if(ui.tab==='project'&&!projById(ui.detail)) ui.tab='home';
-  const navTab=ui.tab==='project'?'home':ui.tab;
-  document.querySelectorAll('[data-action="nav"]').forEach(b=>{ if(b.dataset.tab===navTab) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+  document.querySelectorAll('[data-action="nav"]').forEach(b=>{ if(b.dataset.tab===ui.tab) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current'); });
+  if(pdlg.open) renderDetail();
   const main=document.getElementById('main');
   const loading=!COLS.every(c=>store.loaded[c]);
   if(loading){ main.innerHTML='<div class="topbar"><div><h1>불러오는 중</h1><div class="sub">저장된 데이터를 가져오고 있어요.</div></div></div>'; return; }
-  main.innerHTML={home:renderHome,project:renderProjectDetail,projects:renderProjects,materials:renderMaterials,vendors:renderVendors}[ui.tab]();
+  main.innerHTML={home:renderHome,projects:renderProjects,materials:renderMaterials,vendors:renderVendors}[ui.tab]();
 }
 
 function progressHTML(pr){
@@ -645,17 +653,25 @@ function matRowHTML(m,compact){
       </div>`;
 }
 
-function renderProjectDetail(){
-  const p=projById(ui.detail), st=projStatus(p), pr=projectProgress(p), today=todayISO();
+function openDetail(id){ ui.detail=id; renderDetail(); if(!pdlg.open) pdlg.showModal(); }
+function renderDetail(){
+  const p=projById(ui.detail);
+  if(!p){ if(pdlg.open) pdlg.close(); return; }
+  const body=pdlg.querySelector('.pdlg-b'), top=body?body.scrollTop:0;
+  pdlg.innerHTML=detailHTML(p);
+  const nb=pdlg.querySelector('.pdlg-b'); if(nb&&top) nb.scrollTop=top;
+}
+function detailHTML(p){
+  const st=projStatus(p), pr=projectProgress(p), today=todayISO();
   const next=pr.ms.filter(m=>isOpen(m)&&m.etaDate).sort((a,b)=>a.etaDate<b.etaDate?-1:1)[0];
   const tasks=pr.ts.slice().sort((a,b)=>(a.done-b.done)||((a.dueDate||'9')<(b.dueDate||'9')?-1:1));
   const mats=pr.ms.slice().sort((a,b)=>(isOpen(b)-isOpen(a))||(STAGES.indexOf(a.stage)-STAGES.indexOf(b.stage))||((a.etaDate||'9')<(b.etaDate||'9')?-1:1));
   const evs=D.events.filter(e=>e.projectId===p.id).sort((a,b)=>(a.start||'9')<(b.start||'9')?-1:1);
   const late=tasks.filter(t=>!t.done&&t.dueDate&&t.dueDate<today).length;
   const range=projRangeText(p);
-  return `<button class="btn ghost sm back" data-action="nav" data-tab="home">‹ 프로젝트 캘린더</button>
-    <div class="topbar"><div><h1>${esc(p.name)}</h1><div class="sub">${[p.client,p.notes].filter(Boolean).map(esc).join(' · ')||'고객사 미지정'}</div></div>
-    <div class="actions"><button class="btn" data-action="edit-project" data-id="${p.id}">${ICON.edit}수정</button><button class="btn" data-action="add-event" data-project="${p.id}" data-day="${today}">${ICON.plus}일정</button><button class="btn" data-action="add-material" data-project="${p.id}">${ICON.plus}자재</button><button class="btn primary" data-action="add-task" data-project="${p.id}">${ICON.plus}할 일</button></div></div>
+  return `<div class="pdlg-h"><div><h2>${esc(p.name)}</h2><div class="sub">${[p.client,p.notes].filter(Boolean).map(esc).join(' · ')||'고객사 미지정'}</div></div>
+    <div class="actions"><button class="btn sm" data-action="edit-project" data-id="${p.id}">${ICON.edit}수정</button><button class="btn sm" data-action="add-event" data-project="${p.id}" data-day="${today}">${ICON.plus}일정</button><button class="btn sm" data-action="add-material" data-project="${p.id}">${ICON.plus}자재</button><button class="btn sm primary" data-action="add-task" data-project="${p.id}">${ICON.plus}할 일</button></div><button type="button" class="btn ghost sm close" data-action="pdlg-close" aria-label="닫기">✕</button></div>
+    <div class="pdlg-b">
     <div class="panel detail-head">
       <span class="pill tone-${PROJECT_TONE[st]}">${esc(st)}</span>
       ${progressHTML(pr)}
@@ -673,7 +689,8 @@ function renderProjectDetail(){
       <div class="list">${evs.map(e=>`<button class="row ev-row" data-action="edit-event" data-id="${e.id}">
         <span class="when">${shortDate(e.start)}${e.end&&e.end!==e.start?' ~ '+shortDate(e.end):''}</span>
         <span class="name"><b>${esc(e.title)}</b>${e.memo?`<small>${esc(e.memo)}</small>`:''}</span>
-        <span class="pill tone-event">${ICON[EVENT_ICON[e.type]||'note']}${esc(e.type||'일정')}</span></button>`).join('')||`<div class="empty small">이 프로젝트에 연결된 일정이 없어요.</div>`}</div></div>`;
+        <span class="pill tone-event">${ICON[EVENT_ICON[e.type]||'note']}${esc(e.type||'일정')}</span></button>`).join('')||`<div class="empty small">이 프로젝트에 연결된 일정이 없어요.</div>`}</div></div>
+    </div>`;
 }
 
 function renderMaterials(){
@@ -766,7 +783,7 @@ function calendarHTML(){
     </div>`;
 }
 
-const dlg=document.getElementById('dlg'), form=document.getElementById('dlgForm');
+const dlg=document.getElementById('dlg'), form=document.getElementById('dlgForm'), pdlg=document.getElementById('pdlg');
 let dlgCtx=null;
 function fieldHTML(f){
   const id='f_'+f.key, v=f.value??'';
@@ -812,6 +829,7 @@ function closeOnBackdrop(d){
 closeOnBackdrop(dlg);
 const cfm=document.getElementById('cfm');
 closeOnBackdrop(cfm);
+closeOnBackdrop(pdlg);
 let cfmResolve=null;
 cfm.addEventListener('click',e=>{ const b=e.target.closest('[data-cfm]'); if(!b) return; cfm.returnValue=b.dataset.cfm; cfm.close(); });
 cfm.addEventListener('close',()=>{ const r=cfmResolve; cfmResolve=null; if(r) r(cfm.returnValue==='1'); });
@@ -1008,7 +1026,8 @@ document.addEventListener('click',e=>{
   switch(a){
     case 'nav': ui.tab=el.dataset.tab; ui.keepShown.clear(); render(); window.scrollTo(0,0); break;
     case 'goto-mat': ui.matFilter={project:el.dataset.project||'',stage:el.dataset.stage||'',q:''}; ui.tab='materials'; render(); window.scrollTo(0,0); break;
-    case 'goto-project': ui.detail=el.dataset.project; ui.tab='project'; render(); window.scrollTo(0,0); break;
+    case 'goto-project': openDetail(el.dataset.project); break;
+    case 'pdlg-close': pdlg.close(); break;
     case 'add-task': taskForm(null,{projectId:el.dataset.project||'',dueDate:el.dataset.day||''}); break;
     case 'toggle-show-done': ui.showDone=el.checked; savePrefs(); render(); break;
     case 'show-done': ui.showDone=true; savePrefs(); render(); break;
