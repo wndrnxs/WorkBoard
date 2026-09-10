@@ -235,6 +235,10 @@ a{color:var(--accent)}
 
 dialog{border:0;border-radius:12px;padding:0;background:var(--surface);color:var(--ink);box-shadow:var(--shadow);width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
 dialog::backdrop{background:rgba(10,16,22,.5)}
+dialog.cfm{width:min(380px,calc(100vw - 32px))}
+.cfm-b{padding:20px}
+.cfm-b p{margin:0 0 16px;white-space:pre-line;line-height:1.55}
+.cfm-b .r{display:flex;justify-content:flex-end;gap:8px}
 .dlg-h{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 0}
 .dlg-h h2{font-size:16px}
 .dlg-b{padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;max-height:calc(100vh - 170px);overflow:auto}
@@ -309,6 +313,7 @@ dialog::backdrop{background:rgba(10,16,22,.5)}
   </nav>
 </div>
 <dialog id="dlg"><form id="dlgForm" novalidate></form></dialog>
+<dialog id="cfm" class="cfm"><div class="cfm-b"><p id="cfmMsg"></p><div class="r"><button type="button" class="btn" data-cfm="0">취소</button><button type="button" class="btn danger" data-cfm="1" id="cfmOk">삭제</button></div></div></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -634,6 +639,25 @@ form.addEventListener('change',e=>{
   const show=e.target.value===NEW_PROJECT; inp.closest('.field').hidden=!show; if(show) inp.focus();
 });
 dlg.addEventListener('close',()=>{ dlgCtx=null; });
+// 입력창 바깥(배경)을 눌렀을 때 닫기. 드래그로 글자를 선택하다 밖에서 손을 떼는 경우는 닫지 않도록 pointerdown 위치도 확인한다.
+function closeOnBackdrop(d){
+  let downOutside=false;
+  d.addEventListener('pointerdown',e=>{ downOutside=e.target===d; });
+  d.addEventListener('click',e=>{ if(e.target===d&&downOutside) d.close(); downOutside=false; });
+}
+closeOnBackdrop(dlg);
+const cfm=document.getElementById('cfm');
+closeOnBackdrop(cfm);
+let cfmResolve=null;
+cfm.addEventListener('click',e=>{ const b=e.target.closest('[data-cfm]'); if(!b) return; cfm.returnValue=b.dataset.cfm; cfm.close(); });
+cfm.addEventListener('close',()=>{ const r=cfmResolve; cfmResolve=null; if(r) r(cfm.returnValue==='1'); });
+function askConfirm(msg,okLabel){
+  return new Promise(res=>{
+    document.getElementById('cfmMsg').textContent=msg;
+    document.getElementById('cfmOk').textContent=okLabel||'삭제';
+    cfm.returnValue=''; cfmResolve=res; cfm.showModal(); document.getElementById('cfmOk').focus();
+  });
+}
 const silent=msg=>{ const e=new Error(msg); e.silent=true; return e; };
 const NEW_PROJECT='__new';
 function projectFields(value){
@@ -663,7 +687,7 @@ function projectForm(p,preset){
     onSubmit:async v=>{ await store.put('projects',Object.assign({},p,v,{id:p.id||uid(),createdAt:p.createdAt||new Date().toISOString()})); toast(isNew?'프로젝트를 추가했어요.':'저장했어요.'); },
     onDelete:isNew?null:async()=>{
       const linked=D.materials.filter(m=>m.projectId===p.id);
-      if(!confirm(`"${p.name}" 프로젝트를 삭제할까요?${linked.length?`\n연결된 자재 ${linked.length}건은 남고 프로젝트 연결만 해제됩니다.`:''}`)) return;
+      if(!await askConfirm(`"${p.name}" 프로젝트를 삭제할까요?${linked.length?`\n연결된 자재 ${linked.length}건은 남고 프로젝트 연결만 해제됩니다.`:''}`)) return;
       for(const m of linked) await store.put('materials',Object.assign({},m,{projectId:''}));
       for(const e of D.events.filter(e=>e.projectId===p.id)) await store.put('events',Object.assign({},e,{projectId:''}));
       for(const t of D.tasks.filter(t=>t.projectId===p.id)) await store.put('tasks',Object.assign({},t,{projectId:''}));
@@ -694,7 +718,7 @@ function materialForm(m,preset){
       if(STAGES.indexOf(v.stage)>=3&&!v.orderDate) v.orderDate=todayISO();
       if(v.receivedDate&&v.stage!=='입고 완료') v.stage='입고 완료';
       await store.put('materials',Object.assign({},m,v,{id:m.id||uid(),createdAt:m.createdAt||new Date().toISOString()})); toast(isNew?'자재를 추가했어요.':'저장했어요.'); },
-    onDelete:isNew?null:async()=>{ if(!confirm(`"${m.name}" 자재를 삭제할까요?`)) return; await store.remove('materials',m.id); dlg.close(); toast('삭제했어요.'); }
+    onDelete:isNew?null:async()=>{ if(!await askConfirm(`"${m.name}" 자재를 삭제할까요?`)) return; await store.remove('materials',m.id); dlg.close(); toast('삭제했어요.'); }
   });
 }
 function eventForm(e,preset){
@@ -708,7 +732,7 @@ function eventForm(e,preset){
       {key:'end',label:'종료일 (하루면 비워 두세요)',type:'date',value:e.end},
       {key:'memo',label:'메모',type:'textarea',value:e.memo,span:true}],
     onSubmit:async v=>{ await resolveProject(v); if(v.end&&v.end<v.start) v.end=v.start; await store.put('events',Object.assign({},e,v,{id:e.id||uid(),createdAt:e.createdAt||new Date().toISOString()})); toast(isNew?'일정을 추가했어요.':'저장했어요.'); },
-    onDelete:isNew?null:async()=>{ if(!confirm(`"${e.title}" 일정을 삭제할까요?`)) return; await store.remove('events',e.id); dlg.close(); toast('삭제했어요.'); }
+    onDelete:isNew?null:async()=>{ if(!await askConfirm(`"${e.title}" 일정을 삭제할까요?`)) return; await store.remove('events',e.id); dlg.close(); toast('삭제했어요.'); }
   });
 }
 function vendorForm(v){
@@ -726,7 +750,7 @@ function vendorForm(v){
       const dup=D.vendors.find(x=>x.id!==v.id&&x.name===w.name&&x.type===w.type);
       if(dup){ toast('같은 이름의 업체가 이미 있어요.'); throw silent('dup'); }
       await store.put('vendors',Object.assign({},v,w,{id:v.id||uid(),createdAt:v.createdAt||new Date().toISOString()})); toast(isNew?'업체를 등록했어요.':'저장했어요.'); },
-    onDelete:isNew?null:async()=>{ if(!confirm(`"${v.name}" 업체를 삭제할까요?\n이미 입력된 프로젝트·자재의 업체명은 그대로 남아요.`)) return; await store.remove('vendors',v.id); dlg.close(); toast('삭제했어요.'); }
+    onDelete:isNew?null:async()=>{ if(!await askConfirm(`"${v.name}" 업체를 삭제할까요?\n이미 입력된 프로젝트·자재의 업체명은 그대로 남아요.`)) return; await store.remove('vendors',v.id); dlg.close(); toast('삭제했어요.'); }
   });
 }
 function taskForm(t,preset){
@@ -739,7 +763,7 @@ function taskForm(t,preset){
       {key:'done',label:'상태',type:'select',options:[['0','미완료'],['1','완료']],value:t.done?'1':'0'},
       {key:'notes',label:'메모',type:'textarea',value:t.notes,span:true}],
     onSubmit:async v=>{ await resolveProject(v); v.done=v.done==='1'; await store.put('tasks',Object.assign({},t,v,{id:t.id||uid(),createdAt:t.createdAt||new Date().toISOString(),doneAt:v.done?(t.doneAt||new Date().toISOString()):null})); toast(isNew?'할 일을 추가했어요.':'저장했어요.'); },
-    onDelete:isNew?null:async()=>{ if(!confirm(`"${t.title}" 할 일을 삭제할까요?`)) return; await store.remove('tasks',t.id); dlg.close(); toast('삭제했어요.'); }
+    onDelete:isNew?null:async()=>{ if(!await askConfirm(`"${t.title}" 할 일을 삭제할까요?`)) return; await store.remove('tasks',t.id); dlg.close(); toast('삭제했어요.'); }
   });
 }
 async function toggleMaterial(id){
@@ -760,7 +784,7 @@ function importForm(){
   openForm({title:'백업 가져오기',help:'내보내기로 받은 JSON 내용을 붙여 넣으세요. 현재 데이터는 모두 교체됩니다.',
     fields:[{key:'json',label:'JSON',type:'textarea',value:'',span:true,required:true}],submitLabel:'교체하기',
     onSubmit:async v=>{ let p; try{ p=JSON.parse(v.json); }catch(err){ throw new Error('bad'); } if(!p||typeof p!=='object'||!COLS.some(c=>Array.isArray(p[c]))){ toast('형식이 맞지 않아요. 내보내기 파일 그대로 붙여 넣어 주세요.'); throw new Error('bad'); }
-      if(!confirm('현재 데이터를 모두 지우고 붙여 넣은 내용으로 교체할까요?')) throw new Error('cancel');
+      if(!await askConfirm('현재 데이터를 모두 지우고 붙여 넣은 내용으로 교체할까요?','교체하기')) throw silent('cancel');
       await store.replaceAll(p); toast('가져왔어요.'); }
   });
 }
