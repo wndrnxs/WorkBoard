@@ -15,7 +15,6 @@
   --ok:#2E7D4F; --ok-soft:#DCEFE3; --warn:#B4700F; --warn-soft:#F7E9CF;
   --info:#2B62B0; --info-soft:#DCE6F6; --crit:#B9312F; --crit-soft:#F6DCDB;
   --gray:#6B7785; --gray-soft:#E5E9ED;
-  --proj:#6A4FC4; --proj-soft:#E9E3F8;
   --shadow:0 1px 2px rgba(23,33,43,.06),0 10px 28px rgba(23,33,43,.10);
   --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -29,7 +28,6 @@
     --ok:#5BC27F; --ok-soft:#173424; --warn:#E0A64B; --warn-soft:#3A2B12;
     --info:#6FA2E8; --info-soft:#162A45; --crit:#EF6B69; --crit-soft:#3E1A1A;
     --gray:#93A1AE; --gray-soft:#242E37;
-    --proj:#B29BF2; --proj-soft:#2A2246;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.45);
   }
 }
@@ -41,7 +39,6 @@
   --ok:#5BC27F; --ok-soft:#173424; --warn:#E0A64B; --warn-soft:#3A2B12;
   --info:#6FA2E8; --info-soft:#162A45; --crit:#EF6B69; --crit-soft:#3E1A1A;
   --gray:#93A1AE; --gray-soft:#242E37;
-  --proj:#B29BF2; --proj-soft:#2A2246;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box}
@@ -94,7 +91,6 @@ a{color:var(--accent)}
 .tone-accent{background:var(--accent-soft);color:var(--accent)}
 .tone-ok{background:var(--ok-soft);color:var(--ok)}
 .tone-crit{background:var(--crit-soft);color:var(--crit)}
-.tone-proj{background:var(--proj-soft);color:var(--proj)}
 .tag{display:inline-block;padding:1px 7px;border-radius:5px;font-size:11.5px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
 
 .panel{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
@@ -202,7 +198,7 @@ a{color:var(--accent)}
 .layer[data-layer="events"] i{background:var(--info)}
 .layer[data-layer="eta"] i{background:var(--accent)}
 .layer[data-layer="order"] i{background:var(--gray)}
-.layer[data-layer="projects"] i{background:var(--proj)}
+.layer[data-layer="projects"] i{background:conic-gradient(var(--info) 0 25%,var(--warn) 0 50%,var(--crit) 0 75%,var(--ok) 0)}
 .cal{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
 .dow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-bottom:1px solid var(--line);background:var(--surface-2)}
 .dow span{padding:7px 8px;font-size:11.5px;color:var(--muted);font-weight:500;text-align:left}
@@ -219,9 +215,10 @@ a{color:var(--accent)}
 .cell.sel{box-shadow:inset 0 0 0 2px var(--accent)}
 .chip{display:block;padding:1px 6px;border-radius:4px;font-size:11.5px;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:3px solid currentColor}
 .chip.more{background:transparent;color:var(--muted);border:0;padding-left:6px}
+.chip.proj{font-weight:600}
 .dots{display:none;gap:3px;flex-wrap:wrap}
 .dots i{width:6px;height:6px;border-radius:50%}
-.dot-info{background:var(--info)} .dot-accent{background:var(--accent)} .dot-gray{background:var(--gray)} .dot-crit{background:var(--crit)} .dot-ok{background:var(--ok)} .dot-warn{background:var(--warn)} .dot-proj{background:var(--proj)}
+.dot-info{background:var(--info)} .dot-accent{background:var(--accent)} .dot-gray{background:var(--gray)} .dot-crit{background:var(--crit)} .dot-ok{background:var(--ok)} .dot-warn{background:var(--warn)}
 
 .day-col{position:relative;min-height:320px}
 .day-panel{position:absolute;inset:0;display:flex;flex-direction:column}
@@ -566,7 +563,7 @@ function calendarItems(y,m){
   const map=new Map(), add=(iso,it)=>{ if(!map.has(iso)) map.set(iso,[]); map.get(iso).push(it); };
   const today=todayISO();
   if(ui.layers.events) for(const e of D.events){ if(!e.start) continue; const end=e.end&&e.end>=e.start?e.end:e.start; let d=e.start,i=0; while(d<=end&&i<120){ add(d,{kind:'event',tone:EVENT_TONE[e.type]||'gray',label:e.title,sub:(e.type||'일정')+(e.projectId?' · '+projName(e.projectId):''),action:'edit-event',id:e.id}); d=addDays(d,1); i++; } }
-  if(ui.layers.projects) for(const p of D.projects){ if(!p.dueDate) continue; const st=projStatus(p); const tone=st==='완료'?'ok':(p.dueDate<today?'crit':'proj'); add(p.dueDate,{kind:'project',tone,label:'목표 '+p.name,sub:(st==='완료'?'완료':(p.dueDate<today?'목표일 지남':'프로젝트 목표일'))+' · '+st,action:'edit-project',id:p.id}); }
+  if(ui.layers.projects) for(const p of D.projects){ if(!p.dueDate) continue; const st=projStatus(p); add(p.dueDate,{kind:'project',tone:PROJECT_TONE[st],label:p.name,sub:'프로젝트 '+st+(st!=='완료'&&p.dueDate<today?' · 목표일 지남':' · 목표일'),action:'edit-project',id:p.id}); }
   if(ui.layers.eta) for(const mt of D.materials){ if(!mt.etaDate) continue; const tone=!isOpen(mt)?'ok':(mt.etaDate<today?'crit':'accent'); add(mt.etaDate,{kind:'eta',tone,label:'입고 '+mt.name,sub:(isOpen(mt)?(mt.etaDate<today?'입고 지연':'입고 예정'):'입고 완료')+' · '+projName(mt.projectId),action:'edit-material',id:mt.id}); }
   if(ui.layers.tasks) for(const t of D.tasks){ if(!t.dueDate) continue; const tone=t.done?'ok':(t.dueDate<today?'crit':'warn'); add(t.dueDate,{kind:'task',tone,label:'할일 '+t.title,sub:(t.done?'완료':(t.dueDate<today?'할 일 지연':'할 일 마감'))+(t.projectId?' · '+projName(t.projectId):''),action:'edit-task',id:t.id}); }
   if(ui.layers.order) for(const mt of D.materials){ if(!mt.orderDate) continue; add(mt.orderDate,{kind:'order',tone:'gray',label:'발주 '+mt.name,sub:'발주 · '+projName(mt.projectId),action:'edit-material',id:mt.id}); }
@@ -580,7 +577,7 @@ function calendarHTML(){
   const grid=cells.map((iso,i)=>{
     if(!iso) return '<div class="cell pad"></div>';
     const its=items.get(iso)||[], dow=i%7, dn=Number(iso.slice(8));
-    const chips=its.slice(0,3).map(it=>`<span class="chip tone-${it.tone}">${esc(it.label)}</span>`).join('')+(its.length>3?`<span class="chip more">+${its.length-3}</span>`:'');
+    const chips=its.slice(0,3).map(it=>`<span class="chip tone-${it.tone}${it.kind==='project'?' proj':''}">${esc(it.label)}</span>`).join('')+(its.length>3?`<span class="chip more">+${its.length-3}</span>`:'');
     const dots=its.slice(0,4).map(it=>`<i class="dot-${it.tone}"></i>`).join('');
     return `<button class="cell ${iso===today?'today':''} ${iso===ui.selDay?'sel':''} ${dow===0?'sun':(dow===6?'sat':'')}" data-action="cal-day" data-day="${iso}">
       <span class="dn"><b>${dn}</b>${its.length?`<span>${its.length}</span>`:''}</span>${chips}<span class="dots">${dots}</span></button>`;
