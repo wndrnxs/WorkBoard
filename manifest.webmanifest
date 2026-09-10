@@ -1,0 +1,16 @@
+{
+  "name": "프로젝트 체크리스트",
+  "short_name": "체크리스트",
+  "description": "검사기 프로젝트의 일정, 할 일, 자재 입고를 한 화면에서 관리",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F2F4F6",
+  "theme_color": "#0E6F8E",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
