@@ -15,6 +15,7 @@
   --ok:#2E7D4F; --ok-soft:#DCEFE3; --warn:#B4700F; --warn-soft:#F7E9CF;
   --info:#2B62B0; --info-soft:#DCE6F6; --crit:#B9312F; --crit-soft:#F6DCDB;
   --gray:#6B7785; --gray-soft:#E5E9ED;
+  --proj:#6A4FC4; --proj-soft:#E9E3F8;
   --shadow:0 1px 2px rgba(23,33,43,.06),0 10px 28px rgba(23,33,43,.10);
   --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -28,6 +29,7 @@
     --ok:#5BC27F; --ok-soft:#173424; --warn:#E0A64B; --warn-soft:#3A2B12;
     --info:#6FA2E8; --info-soft:#162A45; --crit:#EF6B69; --crit-soft:#3E1A1A;
     --gray:#93A1AE; --gray-soft:#242E37;
+    --proj:#B29BF2; --proj-soft:#2A2246;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.45);
   }
 }
@@ -39,6 +41,7 @@
   --ok:#5BC27F; --ok-soft:#173424; --warn:#E0A64B; --warn-soft:#3A2B12;
   --info:#6FA2E8; --info-soft:#162A45; --crit:#EF6B69; --crit-soft:#3E1A1A;
   --gray:#93A1AE; --gray-soft:#242E37;
+  --proj:#B29BF2; --proj-soft:#2A2246;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box}
@@ -91,9 +94,9 @@ a{color:var(--accent)}
 .tone-accent{background:var(--accent-soft);color:var(--accent)}
 .tone-ok{background:var(--ok-soft);color:var(--ok)}
 .tone-crit{background:var(--crit-soft);color:var(--crit)}
+.tone-proj{background:var(--proj-soft);color:var(--proj)}
 .tag{display:inline-block;padding:1px 7px;border-radius:5px;font-size:11.5px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
 
-.cols{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px}
 .panel{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
 .panel-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
 .panel-h h2{font-size:14px}
@@ -110,12 +113,11 @@ a{color:var(--accent)}
 .empty{padding:28px 16px;text-align:center;color:var(--muted);font-size:13px}
 .empty b{display:block;color:var(--ink);font-weight:500;margin-bottom:4px}
 
-.agenda-row{grid-template-columns:76px minmax(0,1fr) auto}
 .row .pill{justify-self:start}
 .bar{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--ok);border-radius:3px}
 
-.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:start;margin-bottom:22px}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:start}
 .col{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--surface);--c:var(--gray);--cs:var(--gray-soft)}
 @supports (background:color-mix(in srgb,red 50%,blue)){
   .col{background:color-mix(in srgb,var(--cs) 42%,var(--surface));border-color:color-mix(in srgb,var(--c) 22%,var(--line))}
@@ -139,7 +141,8 @@ a{color:var(--accent)}
 .col-add:hover{background:var(--surface)}
 .col-add svg{width:14px;height:14px}
 .col-empty{padding:14px 8px;text-align:center;color:var(--muted);font-size:12.5px}
-.home-cols{margin-top:20px}
+.home-board{margin-top:22px}
+.home-board h2{font-size:15px;margin-bottom:10px}
 .task-row{grid-template-columns:auto minmax(0,1fr) auto;cursor:pointer}
 .task-row .chk{width:18px;height:18px;margin:0;accent-color:var(--ok);cursor:pointer}
 .task-row .name{display:flex;flex-direction:column;min-width:0}
@@ -188,7 +191,7 @@ a{color:var(--accent)}
 .mat-group{padding:8px 16px;background:var(--surface-2);font-size:12px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
 .mat-group .mono{font-weight:400}
 
-.cal-wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+.cal-wrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:stretch}
 .cal-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .cal-toolbar .mo{display:flex;align-items:center;gap:6px}
 .cal-toolbar .mo h2{font-size:18px;font-family:var(--mono);font-weight:500;min-width:112px;text-align:center;letter-spacing:-.01em}
@@ -199,6 +202,7 @@ a{color:var(--accent)}
 .layer[data-layer="events"] i{background:var(--info)}
 .layer[data-layer="eta"] i{background:var(--accent)}
 .layer[data-layer="order"] i{background:var(--gray)}
+.layer[data-layer="projects"] i{background:var(--proj)}
 .cal{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
 .dow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-bottom:1px solid var(--line);background:var(--surface-2)}
 .dow span{padding:7px 8px;font-size:11.5px;color:var(--muted);font-weight:500;text-align:left}
@@ -217,10 +221,14 @@ a{color:var(--accent)}
 .chip.more{background:transparent;color:var(--muted);border:0;padding-left:6px}
 .dots{display:none;gap:3px;flex-wrap:wrap}
 .dots i{width:6px;height:6px;border-radius:50%}
-.dot-info{background:var(--info)} .dot-accent{background:var(--accent)} .dot-gray{background:var(--gray)} .dot-crit{background:var(--crit)} .dot-ok{background:var(--ok)} .dot-warn{background:var(--warn)}
+.dot-info{background:var(--info)} .dot-accent{background:var(--accent)} .dot-gray{background:var(--gray)} .dot-crit{background:var(--crit)} .dot-ok{background:var(--ok)} .dot-warn{background:var(--warn)} .dot-proj{background:var(--proj)}
 
-.day-panel{position:sticky;top:22px}
-.day-panel .panel-h h2{font-family:var(--mono);font-weight:500}
+.day-col{position:relative;min-height:320px}
+.day-panel{position:absolute;inset:0;display:flex;flex-direction:column}
+.day-panel .panel-h{flex:none}
+.day-panel .panel-h .r{display:flex;gap:4px}
+.day-panel .list{flex:1;min-height:0;overflow:auto}
+.day-panel .empty{margin:auto 0}
 .day-item{display:grid;grid-template-columns:4px minmax(0,1fr);gap:10px;padding:10px 16px;border-bottom:1px solid var(--line);cursor:pointer;background:transparent;border-left:0;border-right:0;border-top:0;text-align:left;width:100%;color:inherit}
 .day-item:last-child{border-bottom:0}
 .day-item:hover{background:var(--surface-2)}
@@ -235,6 +243,7 @@ dialog::backdrop{background:rgba(10,16,22,.5)}
 .dlg-b{padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;max-height:calc(100vh - 170px);overflow:auto}
 .field{display:flex;flex-direction:column;gap:4px;min-width:0}
 .field.span2{grid-column:1/-1}
+.field[hidden]{display:none}
 .field label{font-size:12px;color:var(--muted);font-weight:500}
 .field input,.field select,.field textarea{padding:8px 10px;border:1px solid var(--line-strong);border-radius:8px;background:var(--bg);min-width:0;width:100%}
 .field textarea{resize:vertical;min-height:64px}
@@ -248,10 +257,11 @@ dialog::backdrop{background:rgba(10,16,22,.5)}
 .tabbar{display:none}
 
 @media (max-width:1100px){
-  .cols{grid-template-columns:1fr}
   .board{grid-template-columns:repeat(2,minmax(0,1fr))}
   .cal-wrap{grid-template-columns:1fr}
+  .day-col{min-height:0}
   .day-panel{position:static}
+  .day-panel .list{max-height:320px}
 }
 @media (max-width:760px){
   #app{grid-template-columns:1fr}
@@ -349,7 +359,7 @@ const diffDays=(a,b)=>Math.round((parseISO(a)-parseISO(b))/86400000);
 const shortDate=iso=>iso?iso.slice(5).replace('-','/'):'';
 const fmtKRW=n=>(n||n===0)?KRW.format(n)+'원':'';
 
-const ui={tab:'home',matFilter:{project:'',stage:'',q:''},showDone:false,cal:(()=>{const d=new Date();return {y:d.getFullYear(),m:d.getMonth()};})(),selDay:todayISO(),layers:{events:true,eta:true,tasks:true,order:false}};
+const ui={tab:'home',matFilter:{project:'',stage:'',q:''},showDone:false,cal:(()=>{const d=new Date();return {y:d.getFullYear(),m:d.getMonth()};})(),selDay:todayISO(),layers:{events:true,projects:true,eta:true,tasks:true,order:false}};
 
 const store={
   mode:'local',db:null,downloads:null,loaded:{projects:false,materials:false,events:false,tasks:false,vendors:false},
@@ -424,11 +434,7 @@ function progressHTML(pr){
   return `<span class="prog"><span class="prog-l"><span>${parts.join(' · ')||'항목 없음'}</span><b>${pr.total?pr.pct+'%':'–'}</b></span><span class="bar"><i style="width:${pr.pct}%"></i></span></span>`;
 }
 function renderHome(){
-  const today=todayISO(), items=upcoming(today,14);
-  const agenda=items.length?items.map(it=>`<button class="row agenda-row" data-action="${it.action}" data-id="${it.id}">
-      <span class="date ${it.tone==='crit'?'crit':(it.days<=2?'soon':'')}">${it.days===0?'오늘':(it.days===1?'내일':shortDate(it.date))}</span>
-      <span class="t">${esc(it.label)}</span><span class="pill tone-${it.tone}">${esc(it.kind)}</span></button>`).join('')
-    :`<div class="empty"><b>앞으로 2주간 잡힌 일정이 없어요</b>일정을 추가하거나 자재에 입고예정일, 할 일에 마감일을 넣어 보세요.</div>`;
+  const today=todayISO();
   const projects=D.projects.slice().sort((a,b)=>((a.dueDate||'9')<(b.dueDate||'9')?-1:(a.dueDate||'9')>(b.dueDate||'9')?1:0)||(a.createdAt||'').localeCompare(b.createdAt||''));
   const board=PROJECT_STATUS.map(st=>{
     const list=projects.filter(p=>projStatus(p)===st), tone=PROJECT_TONE[st];
@@ -454,21 +460,10 @@ function renderHome(){
     </section>`;
   }).join('');
   return `<div class="topbar"><div><h1>현황</h1><div class="sub">${new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})} · 프로젝트 ${D.projects.length}건</div></div>
-    <div class="actions"><button class="btn" data-action="add-task">${ICON.plus}할 일</button><button class="btn" data-action="add-material">${ICON.plus}자재</button><button class="btn primary" data-action="add-event" data-day="${ui.selDay}">${ICON.plus}일정</button></div></div>
-    <div class="board">${board}</div>
+    <div class="actions"><button class="btn" data-action="add-task" data-day="${ui.selDay}">${ICON.plus}할 일</button><button class="btn" data-action="add-material">${ICON.plus}자재</button><button class="btn primary" data-action="add-event" data-day="${ui.selDay}">${ICON.plus}일정</button></div></div>
     ${calendarHTML()}
-    <div class="home-cols">
-      <div class="panel"><div class="panel-h"><h2>앞으로 2주</h2><span class="cnt">${items.length}건</span></div><div class="list">${agenda}</div></div>
-    </div>`;
+    <section class="home-board"><h2>프로젝트 현황</h2><div class="board">${board}</div></section>`;
 }
-function upcoming(from,days){
-  const to=addDays(from,days), out=[];
-  for(const m of D.materials){ if(!isOpen(m)||!m.etaDate) continue; if(m.etaDate<=to){ const d=diffDays(m.etaDate,from); out.push({date:m.etaDate,days:d,label:m.name+' · '+projName(m.projectId),kind:d<0?'입고 지연':'입고 예정',tone:d<0?'crit':'accent',action:'edit-material',id:m.id}); } }
-  for(const t of D.tasks){ if(t.done||!t.dueDate) continue; if(t.dueDate<=to){ const d=diffDays(t.dueDate,from); out.push({date:t.dueDate,days:d,label:t.title+(t.projectId?' · '+projName(t.projectId):''),kind:d<0?'할 일 지연':'할 일',tone:d<0?'crit':'warn',action:'edit-task',id:t.id}); } }
-  for(const e of D.events){ const s=e.start, en=e.end||e.start; if(!s||en<from||s>to) continue; const d=Math.max(0,diffDays(s,from)); out.push({date:s<from?from:s,days:d,label:e.title+(e.projectId?' · '+projName(e.projectId):''),kind:e.type||'일정',tone:EVENT_TONE[e.type]||'gray',action:'edit-event',id:e.id}); }
-  return out.sort((a,b)=>a.date<b.date?-1:(a.date>b.date?1:0));
-}
-
 function taskRowHTML(t){
   const ds=dueState(t);
   return `<div class="row task-row ${t.done?'done':''}" data-action="edit-task" data-id="${t.id}" role="button" tabindex="0">
@@ -571,6 +566,7 @@ function calendarItems(y,m){
   const map=new Map(), add=(iso,it)=>{ if(!map.has(iso)) map.set(iso,[]); map.get(iso).push(it); };
   const today=todayISO();
   if(ui.layers.events) for(const e of D.events){ if(!e.start) continue; const end=e.end&&e.end>=e.start?e.end:e.start; let d=e.start,i=0; while(d<=end&&i<120){ add(d,{kind:'event',tone:EVENT_TONE[e.type]||'gray',label:e.title,sub:(e.type||'일정')+(e.projectId?' · '+projName(e.projectId):''),action:'edit-event',id:e.id}); d=addDays(d,1); i++; } }
+  if(ui.layers.projects) for(const p of D.projects){ if(!p.dueDate) continue; const st=projStatus(p); const tone=st==='완료'?'ok':(p.dueDate<today?'crit':'proj'); add(p.dueDate,{kind:'project',tone,label:'목표 '+p.name,sub:(st==='완료'?'완료':(p.dueDate<today?'목표일 지남':'프로젝트 목표일'))+' · '+st,action:'edit-project',id:p.id}); }
   if(ui.layers.eta) for(const mt of D.materials){ if(!mt.etaDate) continue; const tone=!isOpen(mt)?'ok':(mt.etaDate<today?'crit':'accent'); add(mt.etaDate,{kind:'eta',tone,label:'입고 '+mt.name,sub:(isOpen(mt)?(mt.etaDate<today?'입고 지연':'입고 예정'):'입고 완료')+' · '+projName(mt.projectId),action:'edit-material',id:mt.id}); }
   if(ui.layers.tasks) for(const t of D.tasks){ if(!t.dueDate) continue; const tone=t.done?'ok':(t.dueDate<today?'crit':'warn'); add(t.dueDate,{kind:'task',tone,label:'할일 '+t.title,sub:(t.done?'완료':(t.dueDate<today?'할 일 지연':'할 일 마감'))+(t.projectId?' · '+projName(t.projectId):''),action:'edit-task',id:t.id}); }
   if(ui.layers.order) for(const mt of D.materials){ if(!mt.orderDate) continue; add(mt.orderDate,{kind:'order',tone:'gray',label:'발주 '+mt.name,sub:'발주 · '+projName(mt.projectId),action:'edit-material',id:mt.id}); }
@@ -591,15 +587,16 @@ function calendarHTML(){
   }).join('');
   const sel=ui.selDay, selItems=items.get(sel)||[], sd=parseISO(sel);
   const dayList=selItems.length?selItems.map(it=>`<button class="day-item" data-action="${it.action}" data-id="${it.id}" style="--c:var(--${it.tone})"><i></i><span><span class="t">${esc(it.label)}</span><br><span class="m">${esc(it.sub)}</span></span></button>`).join('')
-    :`<div class="empty"><b>이 날은 비어 있어요</b>위의 + 일정 버튼으로 이 날짜에 일정을 추가할 수 있어요.</div>`;
+    :`<div class="empty"><b>${sel===today?'오늘은':'이 날은'} 비어 있어요</b>위의 + 할 일, + 일정 버튼으로 이 날짜에 추가할 수 있어요.</div>`;
+  const dayTitle=sel===today?'오늘 할 일':`${sd.getMonth()+1}/${sd.getDate()} (${DOW[sd.getDay()]}) 할 일`;
   const layer=(k,l)=>`<button class="layer" data-action="layer" data-layer="${k}" aria-pressed="${ui.layers[k]}"><i></i>${l}</button>`;
   return `<div class="cal-toolbar">
       <div class="mo"><button class="btn sm" data-action="cal-prev" aria-label="이전 달">‹</button><h2>${y}.${pad(m+1)}</h2><button class="btn sm" data-action="cal-next" aria-label="다음 달">›</button><button class="btn sm ghost" data-action="cal-today">오늘</button></div>
-      <div class="layers">${layer('events','일정')}${layer('eta','입고예정')}${layer('tasks','할 일')}${layer('order','발주일')}</div>
+      <div class="layers">${layer('events','일정')}${layer('projects','프로젝트')}${layer('eta','입고예정')}${layer('tasks','할 일')}${layer('order','발주일')}</div>
     </div>
     <div class="cal-wrap">
       <div class="cal"><div class="dow">${DOW.map(d=>`<span>${d}</span>`).join('')}</div><div class="grid">${grid}</div></div>
-      <div class="panel day-panel"><div class="panel-h"><h2>${sd.getMonth()+1}/${sd.getDate()} (${DOW[sd.getDay()]})</h2><button class="btn sm ghost" data-action="add-event" data-day="${sel}">${ICON.plus}일정</button></div><div class="list">${dayList}</div></div>
+      <div class="day-col"><div class="panel day-panel"><div class="panel-h"><h2>${dayTitle}</h2><span class="r"><button class="btn sm ghost" data-action="add-task" data-day="${sel}">${ICON.plus}할 일</button><button class="btn sm ghost" data-action="add-event" data-day="${sel}">${ICON.plus}일정</button></span></div><div class="list">${dayList}</div></div></div>
     </div>`;
 }
 
@@ -608,14 +605,14 @@ let dlgCtx=null;
 function fieldHTML(f){
   const id='f_'+f.key, v=f.value??'';
   let ctl;
-  if(f.type==='select') ctl=`<select id="${id}" name="${f.key}">${f.allowEmpty?'<option value="">선택 안 함</option>':''}${f.options.map(o=>{const [val,label]=Array.isArray(o)?o:[o,o];return `<option value="${esc(val)}" ${String(val)===String(v)?'selected':''}>${esc(label)}</option>`;}).join('')}</select>`;
+  if(f.type==='select') ctl=`<select id="${id}" name="${f.key}"${f.newField?` data-new-field="${f.newField}"`:''}>${f.allowEmpty?'<option value="">선택 안 함</option>':''}${f.options.map(o=>{const [val,label]=Array.isArray(o)?o:[o,o];return `<option value="${esc(val)}" ${String(val)===String(v)?'selected':''}>${esc(label)}</option>`;}).join('')}</select>`;
   else if(f.type==='textarea') ctl=`<textarea id="${id}" name="${f.key}" rows="3">${esc(v)}</textarea>`;
   else{
     const list=f.suggest&&f.suggest.length?` list="dl_${f.key}"`:'';
     ctl=`<input id="${id}" name="${f.key}" type="${f.type||'text'}" value="${esc(v)}"${list} ${f.placeholder?`placeholder="${esc(f.placeholder)}"`:''} ${f.type==='number'?'min="0" step="1" inputmode="numeric"':''} ${f.required?'required':''} autocomplete="off">`;
     if(list) ctl+=`<datalist id="dl_${f.key}">${f.suggest.map(s=>`<option value="${esc(s)}"></option>`).join('')}</datalist>`;
   }
-  return `<div class="field ${f.span?'span2':''}"><label for="${id}">${esc(f.label)}</label>${ctl}</div>`;
+  return `<div class="field ${f.span?'span2':''}"${f.hidden?' hidden':''}><label for="${id}">${esc(f.label)}</label>${ctl}</div>`;
 }
 function openForm(ctx){
   dlgCtx=ctx;
@@ -632,9 +629,30 @@ form.addEventListener('submit',async e=>{
   for(const f of dlgCtx.fields){ let v=fd.get(f.key); if(v==null) v=''; v=String(v).trim(); if(f.type==='number') v=v===''?null:Number(v); vals[f.key]=v; }
   const req=dlgCtx.fields.find(f=>f.required&&!vals[f.key]);
   if(req){ toast(req.label+'을(를) 입력해 주세요.'); form.querySelector('#f_'+req.key).focus(); return; }
-  try{ await dlgCtx.onSubmit(vals); dlg.close(); }catch(err){ toast(err&&err.code==='quota_exceeded'?'저장 공간이 가득 찼어요. 오래된 항목을 삭제해 주세요.':'저장하지 못했어요. 잠시 후 다시 시도해 주세요.'); }
+  try{ await dlgCtx.onSubmit(vals); dlg.close(); }catch(err){ if(err&&err.silent) return; toast(err&&err.code==='quota_exceeded'?'저장 공간이 가득 찼어요. 오래된 항목을 삭제해 주세요.':'저장하지 못했어요. 잠시 후 다시 시도해 주세요.'); }
+});
+form.addEventListener('change',e=>{
+  const nf=e.target.dataset&&e.target.dataset.newField; if(!nf) return;
+  const inp=form.querySelector('#f_'+nf); if(!inp) return;
+  const show=e.target.value===NEW_PROJECT; inp.closest('.field').hidden=!show; if(show) inp.focus();
 });
 dlg.addEventListener('close',()=>{ dlgCtx=null; });
+const silent=msg=>{ const e=new Error(msg); e.silent=true; return e; };
+const NEW_PROJECT='__new';
+function projectFields(value){
+  return [
+    {key:'projectId',label:'프로젝트',type:'select',options:D.projects.map(p=>[p.id,p.name]).concat([[NEW_PROJECT,'＋ 새 프로젝트 직접 입력']]),allowEmpty:true,value:value||'',newField:'projectNew'},
+    {key:'projectNew',label:'새 프로젝트 이름',value:'',placeholder:'예: ESOL 현장셋업',hidden:true}];
+}
+async function resolveProject(v){
+  const name=(v.projectNew||'').trim(); delete v.projectNew;
+  if(v.projectId!==NEW_PROJECT) return;
+  if(!name){ toast('새 프로젝트 이름을 입력해 주세요.'); const el=form.querySelector('#f_projectNew'); if(el) el.focus(); throw silent('noname'); }
+  const dup=D.projects.find(p=>p.name===name);
+  if(dup){ v.projectId=dup.id; return; }
+  const p={id:uid(),name,status:'진행 중',createdAt:new Date().toISOString()};
+  await store.put('projects',p); v.projectId=p.id; toast(`"${name}" 프로젝트를 새로 만들었어요.`);
+}
 
 function projectForm(p,preset){
   const isNew=!p; p=p||Object.assign({},preset||{});
@@ -643,7 +661,7 @@ function projectForm(p,preset){
       {key:'name',label:'과제명',value:p.name,required:true,span:true,placeholder:'예: IT 정면시야각 검사기 (#10, #11)'},
       {key:'client',label:'고객사',value:p.client,suggest:vendorNames('고객사'),placeholder:'업체 탭에 등록한 고객사가 제안돼요'},
       {key:'status',label:'상태',type:'select',options:PROJECT_STATUS,value:projStatus(p)},
-      {key:'dueDate',label:'목표일 (납기)',type:'date',value:p.dueDate},
+      {key:'dueDate',label:'목표일 (납기) · 달력에 표시돼요',type:'date',value:p.dueDate},
       {key:'notes',label:'메모',type:'textarea',value:p.notes,span:true}],
     onSubmit:async v=>{ await store.put('projects',Object.assign({},p,v,{id:p.id||uid(),createdAt:p.createdAt||new Date().toISOString()})); toast(isNew?'프로젝트를 추가했어요.':'저장했어요.'); },
     onDelete:isNew?null:async()=>{
@@ -657,12 +675,11 @@ function projectForm(p,preset){
 }
 function materialForm(m,preset){
   const isNew=!m; m=m||Object.assign({},preset||{});
-  const projOpts=D.projects.map(p=>[p.id,p.name]);
   openForm({title:isNew?'자재 추가':'자재 수정',
     help:D.projects.length?'':'프로젝트를 먼저 만들면 자재를 과제별로 묶어 볼 수 있어요.',
     fields:[
       {key:'name',label:'자재명',value:m.name,required:true,span:true,placeholder:'예: Basler acA2500 카메라'},
-      {key:'projectId',label:'프로젝트',type:'select',options:projOpts,allowEmpty:true,value:m.projectId||ui.matFilter.project||''},
+      ...projectFields(m.projectId||ui.matFilter.project),
       {key:'category',label:'분류',type:'select',options:CATEGORIES,value:m.category||'카메라'},
       {key:'stage',label:'단계',type:'select',options:STAGES,value:m.stage||'요청 전'},
       {key:'priority',label:'우선순위',type:'select',options:PRIORITIES,value:m.priority||'보통'},
@@ -675,6 +692,7 @@ function materialForm(m,preset){
       {key:'receivedDate',label:'입고완료일',type:'date',value:m.receivedDate},
       {key:'notes',label:'메모 (견적 번호, 사양 등)',type:'textarea',value:m.notes,span:true}],
     onSubmit:async v=>{
+      await resolveProject(v);
       if(v.stage==='입고 완료'&&!v.receivedDate) v.receivedDate=todayISO();
       if(STAGES.indexOf(v.stage)>=3&&!v.orderDate) v.orderDate=todayISO();
       if(v.receivedDate&&v.stage!=='입고 완료') v.stage='입고 완료';
@@ -688,11 +706,11 @@ function eventForm(e,preset){
     fields:[
       {key:'title',label:'제목',value:e.title,required:true,span:true,placeholder:'예: A2 베트남 출장 / 카메라 사양 회의'},
       {key:'type',label:'종류',type:'select',options:EVENT_TYPES,value:e.type||'회의'},
-      {key:'projectId',label:'프로젝트',type:'select',options:D.projects.map(p=>[p.id,p.name]),allowEmpty:true,value:e.projectId||''},
+      ...projectFields(e.projectId),
       {key:'start',label:'시작일',type:'date',value:e.start||ui.selDay,required:true},
       {key:'end',label:'종료일 (하루면 비워 두세요)',type:'date',value:e.end},
       {key:'memo',label:'메모',type:'textarea',value:e.memo,span:true}],
-    onSubmit:async v=>{ if(v.end&&v.end<v.start) v.end=v.start; await store.put('events',Object.assign({},e,v,{id:e.id||uid(),createdAt:e.createdAt||new Date().toISOString()})); toast(isNew?'일정을 추가했어요.':'저장했어요.'); },
+    onSubmit:async v=>{ await resolveProject(v); if(v.end&&v.end<v.start) v.end=v.start; await store.put('events',Object.assign({},e,v,{id:e.id||uid(),createdAt:e.createdAt||new Date().toISOString()})); toast(isNew?'일정을 추가했어요.':'저장했어요.'); },
     onDelete:isNew?null:async()=>{ if(!confirm(`"${e.title}" 일정을 삭제할까요?`)) return; await store.remove('events',e.id); dlg.close(); toast('삭제했어요.'); }
   });
 }
@@ -709,7 +727,7 @@ function vendorForm(v){
       {key:'notes',label:'메모 (취급 품목, 결제 조건 등)',type:'textarea',value:v.notes,span:true}],
     onSubmit:async w=>{
       const dup=D.vendors.find(x=>x.id!==v.id&&x.name===w.name&&x.type===w.type);
-      if(dup){ toast('같은 이름의 업체가 이미 있어요.'); throw new Error('dup'); }
+      if(dup){ toast('같은 이름의 업체가 이미 있어요.'); throw silent('dup'); }
       await store.put('vendors',Object.assign({},v,w,{id:v.id||uid(),createdAt:v.createdAt||new Date().toISOString()})); toast(isNew?'업체를 등록했어요.':'저장했어요.'); },
     onDelete:isNew?null:async()=>{ if(!confirm(`"${v.name}" 업체를 삭제할까요?\n이미 입력된 프로젝트·자재의 업체명은 그대로 남아요.`)) return; await store.remove('vendors',v.id); dlg.close(); toast('삭제했어요.'); }
   });
@@ -719,11 +737,11 @@ function taskForm(t,preset){
   openForm({title:isNew?'할 일 추가':'할 일 수정',
     fields:[
       {key:'title',label:'할 일',value:t.title,required:true,span:true,placeholder:'예: 광학계 사양서 검토 / 발주 승인 요청'},
-      {key:'projectId',label:'프로젝트',type:'select',options:D.projects.map(p=>[p.id,p.name]),allowEmpty:true,value:t.projectId||''},
+      ...projectFields(t.projectId),
       {key:'dueDate',label:'마감일',type:'date',value:t.dueDate},
       {key:'done',label:'상태',type:'select',options:[['0','미완료'],['1','완료']],value:t.done?'1':'0'},
       {key:'notes',label:'메모',type:'textarea',value:t.notes,span:true}],
-    onSubmit:async v=>{ v.done=v.done==='1'; await store.put('tasks',Object.assign({},t,v,{id:t.id||uid(),createdAt:t.createdAt||new Date().toISOString(),doneAt:v.done?(t.doneAt||new Date().toISOString()):null})); toast(isNew?'할 일을 추가했어요.':'저장했어요.'); },
+    onSubmit:async v=>{ await resolveProject(v); v.done=v.done==='1'; await store.put('tasks',Object.assign({},t,v,{id:t.id||uid(),createdAt:t.createdAt||new Date().toISOString(),doneAt:v.done?(t.doneAt||new Date().toISOString()):null})); toast(isNew?'할 일을 추가했어요.':'저장했어요.'); },
     onDelete:isNew?null:async()=>{ if(!confirm(`"${t.title}" 할 일을 삭제할까요?`)) return; await store.remove('tasks',t.id); dlg.close(); toast('삭제했어요.'); }
   });
 }
@@ -769,7 +787,7 @@ document.addEventListener('click',e=>{
     case 'nav': ui.tab=el.dataset.tab; render(); window.scrollTo(0,0); break;
     case 'goto-mat': ui.matFilter={project:el.dataset.project||'',stage:el.dataset.stage||'',q:''}; ui.tab='materials'; render(); window.scrollTo(0,0); break;
     case 'goto-project': ui.tab='projects'; render(); { const sec=document.querySelector(`.proj-sec [data-action="edit-project"][data-id="${el.dataset.project}"]`); if(sec) sec.closest('.proj-sec').scrollIntoView({block:'start'}); else window.scrollTo(0,0); } break;
-    case 'add-task': taskForm(null,{projectId:el.dataset.project||''}); break;
+    case 'add-task': taskForm(null,{projectId:el.dataset.project||'',dueDate:el.dataset.day||''}); break;
     case 'toggle-show-done': ui.showDone=el.checked; render(); break;
     case 'add-vendor': vendorForm(null); break;
     case 'edit-vendor': { const v=D.vendors.find(x=>x.id===id); if(v) vendorForm(v); break; }
