@@ -16,6 +16,7 @@
   --info:#2B62B0; --info-soft:#DCE6F6; --crit:#B9312F; --crit-soft:#F6DCDB;
   --gray:#6B7785; --gray-soft:#E5E9ED;
   --trip:#6A4FC4; --trip-soft:#E9E3F8;
+  --event:#C0397A; --event-soft:#F8DDEA; --task:#CF5A1C; --task-soft:#FBE4D6;
   --shadow:0 1px 2px rgba(23,33,43,.06),0 10px 28px rgba(23,33,43,.10);
   --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -30,6 +31,7 @@
     --info:#6FA2E8; --info-soft:#162A45; --crit:#EF6B69; --crit-soft:#3E1A1A;
     --gray:#93A1AE; --gray-soft:#242E37;
     --trip:#B29BF2; --trip-soft:#2A2246;
+    --event:#F27DB5; --event-soft:#3E1B2E; --task:#F49A5C; --task-soft:#3F2414;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.45);
   }
 }
@@ -42,6 +44,7 @@
   --info:#6FA2E8; --info-soft:#162A45; --crit:#EF6B69; --crit-soft:#3E1A1A;
   --gray:#93A1AE; --gray-soft:#242E37;
   --trip:#B29BF2; --trip-soft:#2A2246;
+  --event:#F27DB5; --event-soft:#3E1B2E; --task:#F49A5C; --task-soft:#3F2414;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box}
@@ -95,6 +98,8 @@ a{color:var(--accent)}
 .tone-ok{background:var(--ok-soft);color:var(--ok)}
 .tone-crit{background:var(--crit-soft);color:var(--crit)}
 .tone-trip{background:var(--trip-soft);color:var(--trip)}
+.tone-event{background:var(--event-soft);color:var(--event)}
+.tone-task{background:var(--task-soft);color:var(--task)}
 .tag{display:inline-block;padding:1px 7px;border-radius:5px;font-size:11.5px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
 
 .panel{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
@@ -146,12 +151,10 @@ a{color:var(--accent)}
 .task-row{grid-template-columns:auto minmax(0,1fr) auto;cursor:pointer}
 .task-row .chk{width:18px;height:18px;margin:0;accent-color:var(--ok);cursor:pointer}
 .task-row .name{display:flex;flex-direction:column;min-width:0}
-.task-row .name b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px}
-.task-row .name b svg{width:14px;height:14px;flex:none;color:var(--trip)}
-.task-row .name b .tag{font-weight:400}
+.task-row .name b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .task-row .name small{color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .task-row.done .name b{color:var(--muted);text-decoration:line-through}
-.layer[data-layer="tasks"] i{background:var(--trip)}
+.layer[data-layer="tasks"] i{background:var(--task)}
 .proj-list{display:flex;flex-direction:column;gap:14px}
 .proj-sec.is-done{opacity:.72}
 .proj-head{display:flex;align-items:center;gap:12px;padding:14px 16px 10px;flex-wrap:wrap}
@@ -206,7 +209,7 @@ a{color:var(--accent)}
 .layer{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid var(--line-strong);background:var(--surface);cursor:pointer;font-size:12.5px;color:var(--muted)}
 .layer i{width:8px;height:8px;border-radius:50%;background:var(--gray)}
 .layer[aria-pressed="true"]{border-color:var(--accent);color:var(--ink);background:var(--accent-soft)}
-.layer[data-layer="events"] i{background:var(--info)}
+.layer[data-layer="events"] i{background:var(--event)}
 .layer[data-layer="eta"] i{background:var(--accent)}
 .layer[data-layer="order"] i{background:var(--gray)}
 .layer[data-layer="projects"] i{background:conic-gradient(var(--info) 0 25%,var(--warn) 0 50%,var(--crit) 0 75%,var(--trip) 0)}
@@ -238,7 +241,7 @@ a{color:var(--accent)}
 .chip.proj{font-weight:600}
 .dots{display:none;gap:3px;flex-wrap:wrap}
 .dots i{width:6px;height:6px;border-radius:50%}
-.dot-info{background:var(--info)} .dot-accent{background:var(--accent)} .dot-gray{background:var(--gray)} .dot-crit{background:var(--crit)} .dot-ok{background:var(--ok)} .dot-warn{background:var(--warn)} .dot-trip{background:var(--trip)}
+.dot-info{background:var(--info)} .dot-accent{background:var(--accent)} .dot-gray{background:var(--gray)} .dot-crit{background:var(--crit)} .dot-ok{background:var(--ok)} .dot-warn{background:var(--warn)} .dot-trip{background:var(--trip)} .dot-event{background:var(--event)} .dot-task{background:var(--task)}
 
 .day-col{position:relative;min-height:320px}
 .day-panel{position:absolute;inset:0;display:flex;flex-direction:column}
@@ -352,9 +355,6 @@ const BOARD_STATUS=PROJECT_STATUS.filter(s=>s!=='완료'); // 메인 보드에�
 const PROJECT_TONE={'검토 중':'info','진행 중':'warn','진행대기':'crit','출장대기':'trip','완료':'ok'};
 const PROJECT_DESC={'검토 중':'검토·견적 단계','진행 중':'진행 중인 과제','진행대기':'착수 대기','출장대기':'출장 대기','완료':'완료된 과제'};
 const EVENT_TYPES=['회의','납기','출장','검수','기타'];
-const TASK_KINDS=['일반','출장'];
-const taskIcon=t=>t.kind==='출장'?'plane':'check';
-const EVENT_TONE={'회의':'info','납기':'crit','출장':'warn','검수':'accent','기타':'gray'};
 const DOW=['일','월','화','수','목','금','토'];
 
 const ICON={
@@ -511,7 +511,7 @@ function taskRowHTML(t){
   const ds=dueState(t);
   return `<div class="row task-row ${t.done?'done':''}" data-action="edit-task" data-id="${t.id}" role="button" tabindex="0">
     <input type="checkbox" class="chk" data-action="toggle-task" data-id="${t.id}" ${t.done?'checked':''} aria-label="완료">
-    <span class="name"><b>${t.kind==='출장'?ICON.plane+'<span>'+esc(t.title)+'</span><span class="tag">출장</span>':esc(t.title)}</b>${t.notes?`<small>${esc(t.notes)}</small>`:''}</span>
+    <span class="name"><b>${esc(t.title)}</b>${t.notes?`<small>${esc(t.notes)}</small>`:''}</span>
     <span class="date ${ds}">${t.dueDate?(ds==='crit'?'지연 ':'')+shortDate(t.dueDate):''}</span>
   </div>`;
 }
@@ -631,10 +631,10 @@ function renderMaterials(){
 function calendarItems(y,m){
   const map=new Map(), add=(iso,it)=>{ if(!map.has(iso)) map.set(iso,[]); map.get(iso).push(it); };
   const today=todayISO();
-  if(ui.layers.events) for(const e of D.events){ if(!e.start) continue; const end=e.end&&e.end>=e.start?e.end:e.start; let d=e.start,i=0; while(d<=end&&i<120){ add(d,{kind:'event',key:'event:'+e.id,span:end>e.start,start:e.start,end,icon:EVENT_ICON[e.type]||'note',tone:EVENT_TONE[e.type]||'gray',label:e.title,sub:(e.type||'일정')+(e.projectId?' · '+projName(e.projectId):''),action:'edit-event',id:e.id}); d=addDays(d,1); i++; } }
+  if(ui.layers.events) for(const e of D.events){ if(!e.start) continue; const end=e.end&&e.end>=e.start?e.end:e.start; let d=e.start,i=0; while(d<=end&&i<120){ add(d,{kind:'event',key:'event:'+e.id,span:end>e.start,start:e.start,end,icon:EVENT_ICON[e.type]||'note',tone:'event',label:e.title,sub:(e.type||'일정')+(e.projectId?' · '+projName(e.projectId):''),action:'edit-event',id:e.id}); d=addDays(d,1); i++; } }
   if(ui.layers.projects) for(const p of D.projects){ const {start,end}=projDates(p); if(!end) continue; const st=projStatus(p); const sub='프로젝트 '+st+' · '+(start!==end?shortDate(start)+' ~ '+shortDate(end):(st!=='완료'&&end<today?'목표일 지남':'목표일')); let d=start,i=0; while(d<=end&&i<120){ add(d,{kind:'project',key:'project:'+p.id,span:start!==end,start,end,icon:'target',tone:PROJECT_TONE[st],label:p.name,sub,action:'edit-project',id:p.id}); d=addDays(d,1); i++; } }
   if(ui.layers.eta) for(const mt of D.materials){ if(!mt.etaDate) continue; const tone=!isOpen(mt)?'ok':(mt.etaDate<today?'crit':'accent'); add(mt.etaDate,{kind:'eta',icon:'box',tone,label:mt.name,sub:(isOpen(mt)?(mt.etaDate<today?'입고 지연':'입고 예정'):'입고 완료')+' · '+projName(mt.projectId),action:'edit-material',id:mt.id}); }
-  if(ui.layers.tasks) for(const t of D.tasks){ if(!t.dueDate) continue; const tone=t.done?'ok':(t.dueDate<today?'crit':'trip'); add(t.dueDate,{kind:'task',icon:taskIcon(t),tone,label:t.title,sub:(t.kind==='출장'?'출장 · ':'')+(t.done?'완료':(t.dueDate<today?'할 일 지연':'할 일 마감'))+(t.projectId?' · '+projName(t.projectId):''),action:'edit-task',id:t.id}); }
+  if(ui.layers.tasks) for(const t of D.tasks){ if(!t.dueDate) continue; const tone=t.done?'ok':(t.dueDate<today?'crit':'task'); add(t.dueDate,{kind:'task',icon:'check',tone,label:t.title,sub:(t.done?'완료':(t.dueDate<today?'할 일 지연':'할 일 마감'))+(t.projectId?' · '+projName(t.projectId):''),action:'edit-task',id:t.id}); }
   if(ui.layers.order) for(const mt of D.materials){ if(!mt.orderDate) continue; add(mt.orderDate,{kind:'order',icon:'cart',tone:'gray',label:mt.name,sub:'발주 · '+projName(mt.projectId),action:'edit-material',id:mt.id}); }
   return map;
 }
@@ -839,7 +839,6 @@ function taskForm(t,preset){
   openForm({title:isNew?'할 일 추가':'할 일 수정',
     fields:[
       {key:'title',label:'할 일',value:t.title,required:true,span:true,placeholder:'예: 광학계 사양서 검토 / 발주 승인 요청'},
-      {key:'kind',label:'종류',type:'select',options:TASK_KINDS,value:t.kind||'일반'},
       ...projectFields(t.projectId),
       {key:'dueDate',label:'마감일',type:'date',value:t.dueDate},
       {key:'done',label:'상태',type:'select',options:[['0','미완료'],['1','완료']],value:t.done?'1':'0'},
