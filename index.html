@@ -15,6 +15,7 @@
   --ok:#2E7D4F; --ok-soft:#DCEFE3; --warn:#B4700F; --warn-soft:#F7E9CF;
   --info:#2B62B0; --info-soft:#DCE6F6; --crit:#B9312F; --crit-soft:#F6DCDB;
   --gray:#6B7785; --gray-soft:#E5E9ED;
+  --trip:#6A4FC4; --trip-soft:#E9E3F8;
   --shadow:0 1px 2px rgba(23,33,43,.06),0 10px 28px rgba(23,33,43,.10);
   --sans:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -28,6 +29,7 @@
     --ok:#5BC27F; --ok-soft:#173424; --warn:#E0A64B; --warn-soft:#3A2B12;
     --info:#6FA2E8; --info-soft:#162A45; --crit:#EF6B69; --crit-soft:#3E1A1A;
     --gray:#93A1AE; --gray-soft:#242E37;
+    --trip:#B29BF2; --trip-soft:#2A2246;
     --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.45);
   }
 }
@@ -39,6 +41,7 @@
   --ok:#5BC27F; --ok-soft:#173424; --warn:#E0A64B; --warn-soft:#3A2B12;
   --info:#6FA2E8; --info-soft:#162A45; --crit:#EF6B69; --crit-soft:#3E1A1A;
   --gray:#93A1AE; --gray-soft:#242E37;
+  --trip:#B29BF2; --trip-soft:#2A2246;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box}
@@ -91,6 +94,7 @@ a{color:var(--accent)}
 .tone-accent{background:var(--accent-soft);color:var(--accent)}
 .tone-ok{background:var(--ok-soft);color:var(--ok)}
 .tone-crit{background:var(--crit-soft);color:var(--crit)}
+.tone-trip{background:var(--trip-soft);color:var(--trip)}
 .tag{display:inline-block;padding:1px 7px;border-radius:5px;font-size:11.5px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
 
 .panel{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
@@ -203,7 +207,7 @@ a{color:var(--accent)}
 .layer[data-layer="events"] i{background:var(--info)}
 .layer[data-layer="eta"] i{background:var(--accent)}
 .layer[data-layer="order"] i{background:var(--gray)}
-.layer[data-layer="projects"] i{background:conic-gradient(var(--info) 0 25%,var(--warn) 0 50%,var(--crit) 0 75%,var(--ok) 0)}
+.layer[data-layer="projects"] i{background:conic-gradient(var(--info) 0 25%,var(--warn) 0 50%,var(--crit) 0 75%,var(--trip) 0)}
 .cal{border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
 .dow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-bottom:1px solid var(--line);background:var(--surface-2)}
 .dow span{padding:7px 8px;font-size:11.5px;color:var(--muted);font-weight:500;text-align:left}
@@ -218,12 +222,14 @@ a{color:var(--accent)}
 .cell.sun .dn{color:var(--crit)} .cell.sat .dn{color:var(--info)}
 .cell.today .dn b{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-weight:500}
 .cell.sel{box-shadow:inset 0 0 0 2px var(--accent)}
-.chip{display:block;padding:1px 6px;border-radius:4px;font-size:11.5px;line-height:1.5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-left:3px solid currentColor}
-.chip.more{background:transparent;color:var(--muted);border:0;padding-left:6px}
+.chip{display:flex;align-items:center;gap:4px;padding:1px 6px 1px 5px;border-radius:4px;font-size:11.5px;line-height:1.5;white-space:nowrap;border-left:3px solid currentColor;min-width:0}
+.chip svg{width:11px;height:11px;flex:none;opacity:.9}
+.chip span{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.chip.more{display:block;background:transparent;color:var(--muted);border:0;padding-left:6px}
 .chip.proj{font-weight:600}
 .dots{display:none;gap:3px;flex-wrap:wrap}
 .dots i{width:6px;height:6px;border-radius:50%}
-.dot-info{background:var(--info)} .dot-accent{background:var(--accent)} .dot-gray{background:var(--gray)} .dot-crit{background:var(--crit)} .dot-ok{background:var(--ok)} .dot-warn{background:var(--warn)}
+.dot-info{background:var(--info)} .dot-accent{background:var(--accent)} .dot-gray{background:var(--gray)} .dot-crit{background:var(--crit)} .dot-ok{background:var(--ok)} .dot-warn{background:var(--warn)} .dot-trip{background:var(--trip)}
 
 .day-col{position:relative;min-height:320px}
 .day-panel{position:absolute;inset:0;display:flex;flex-direction:column}
@@ -235,7 +241,8 @@ a{color:var(--accent)}
 .day-item:last-child{border-bottom:0}
 .day-item:hover{background:var(--surface-2)}
 .day-item i{border-radius:2px;background:var(--c,var(--gray))}
-.day-item .t{font-weight:500}
+.day-item .t{font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.day-item .t svg{width:14px;height:14px;flex:none;color:var(--c,var(--muted))}
 .day-item .m{color:var(--muted);font-size:12.5px}
 
 dialog{border:0;border-radius:12px;padding:0;background:var(--surface);color:var(--ink);box-shadow:var(--shadow);width:min(560px,calc(100vw - 32px));max-height:calc(100vh - 32px)}
@@ -330,9 +337,10 @@ const LS_KEY='inspector-board-v1';
 const CATEGORIES=['PC','카메라','렌즈','조명','프레임/기구','소프트웨어/라이선스','외주/서비스','기타'];
 const STAGES=['요청 전','견적 요청','견적 접수','발주 완료','입고 완료'];
 const STAGE_TONE={'요청 전':'gray','견적 요청':'warn','견적 접수':'info','발주 완료':'accent','입고 완료':'ok'};
-const PROJECT_STATUS=['검토 중','진행 중','진행대기','완료'];
-const PROJECT_TONE={'검토 중':'info','진행 중':'warn','진행대기':'crit','완료':'ok'};
-const PROJECT_DESC={'검토 중':'검토·견적 단계','진행 중':'진행 중인 과제','진행대기':'착수 대기','완료':'완료된 과제'};
+const PROJECT_STATUS=['검토 중','진행 중','진행대기','출장대기','완료'];
+const BOARD_STATUS=PROJECT_STATUS.filter(s=>s!=='완료'); // 메인 보드에는 완료를 보여주지 않는다
+const PROJECT_TONE={'검토 중':'info','진행 중':'warn','진행대기':'crit','출장대기':'trip','완료':'ok'};
+const PROJECT_DESC={'검토 중':'검토·견적 단계','진행 중':'진행 중인 과제','진행대기':'착수 대기','출장대기':'출장 대기','완료':'완료된 과제'};
 const EVENT_TYPES=['회의','납기','출장','검수','기타'];
 const EVENT_TONE={'회의':'info','납기':'crit','출장':'warn','검수':'accent','기타':'gray'};
 const DOW=['일','월','화','수','목','금','토'];
@@ -350,7 +358,16 @@ const ICON={
   plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
   target:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/></svg>',
+  plane:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>',
+  box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>',
+  meet:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4V5z"/></svg>',
+  flag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h13l-3 4 3 4H5"/></svg>',
+  inspect:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>',
+  cart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.5 11h11L21 7H6.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></svg>',
+  note:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h6M9 16h6"/></svg>',
 };
+const EVENT_ICON={'회의':'meet','납기':'flag','출장':'plane','검수':'inspect','기타':'note'};
 document.querySelectorAll('[data-action]').forEach(b=>{ b.innerHTML=b.innerHTML.replace(/\$\{ICON\.(\w+)\}/g,(_,k)=>ICON[k]||''); });
 
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -413,6 +430,10 @@ const projById=id=>D.projects.find(p=>p.id===id);
 const projName=id=>{const p=projById(id);return p?p.name:(id?'(삭제된 프로젝트)':'미배정');};
 const projStatus=p=>p.status==='대기'?'진행대기':(PROJECT_STATUS.includes(p.status)?p.status:'진행 중');
 const longDate=iso=>iso?parseISO(iso).toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}):'';
+const monthDay=iso=>iso?parseISO(iso).toLocaleDateString('ko-KR',{month:'long',day:'numeric'}):'';
+// 프로젝트 기간. 예전 데이터의 목표일(dueDate)은 종료일로 취급한다.
+const projDates=p=>{ const end=p.endDate||p.dueDate||p.startDate||'', start=p.startDate||end; return {start,end}; };
+const projRangeText=p=>{ const {start,end}=projDates(p); if(!end) return ''; return start!==end?`${longDate(start)} ~ ${monthDay(end)}`:longDate(end); };
 const isOpen=m=>m.stage!=='입고 완료';
 const etaState=m=>{ if(!m.etaDate||!isOpen(m)) return ''; const dd=diffDays(m.etaDate,todayISO()); return dd<0?'crit':(dd<=7?'soon':''); };
 const dueState=t=>{ if(!t.dueDate||t.done) return ''; const dd=diffDays(t.dueDate,todayISO()); return dd<0?'crit':(dd<=3?'soon':''); };
@@ -443,15 +464,17 @@ function progressHTML(pr){
 }
 function renderHome(){
   const today=todayISO();
-  const projects=D.projects.slice().sort((a,b)=>((a.dueDate||'9')<(b.dueDate||'9')?-1:(a.dueDate||'9')>(b.dueDate||'9')?1:0)||(a.createdAt||'').localeCompare(b.createdAt||''));
-  const board=PROJECT_STATUS.map(st=>{
+  const endOf=p=>projDates(p).end||'9';
+  const projects=D.projects.slice().sort((a,b)=>(endOf(a)<endOf(b)?-1:endOf(a)>endOf(b)?1:0)||(a.createdAt||'').localeCompare(b.createdAt||''));
+  const board=BOARD_STATUS.map(st=>{
     const list=projects.filter(p=>projStatus(p)===st), tone=PROJECT_TONE[st];
     const cards=list.map(p=>{
       const pr=projectProgress(p);
       const next=pr.ms.filter(m=>isOpen(m)&&m.etaDate).sort((a,b)=>a.etaDate<b.etaDate?-1:1)[0];
       const done=st==='완료';
       let dateHTML='';
-      if(p.dueDate){ const dd=diffDays(p.dueDate,today); dateHTML=`<span class="date ${done?'':(dd<0?'crit':(dd<=7?'soon':''))}">${longDate(p.dueDate)}</span>`; }
+      const {end}=projDates(p);
+      if(end){ const dd=diffDays(end,today); dateHTML=`<span class="date ${done?'':(dd<0?'crit':(dd<=7?'soon':''))}">${projRangeText(p)}</span>`; }
       else if(next&&!done) dateHTML=`<span class="date ${etaState(next)}">다음 입고 ${shortDate(next.etaDate)}</span>`;
       const inProg=st==='진행 중';
       return `<button class="card ${done?'is-done':''}" data-action="goto-project" data-project="${p.id}">
@@ -467,7 +490,7 @@ function renderHome(){
       <button class="col-add" data-action="add-project" data-status="${esc(st)}">${ICON.plus}새 프로젝트</button>
     </section>`;
   }).join('');
-  return `<div class="topbar"><div><h1>현황</h1><div class="sub">${new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})} · 프로젝트 ${D.projects.length}건</div></div>
+  return `<div class="topbar"><div><h1>현황</h1><div class="sub">${new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})} · 프로젝트 ${D.projects.length}건${D.projects.filter(p=>projStatus(p)==='완료').length?` · 완료 ${D.projects.filter(p=>projStatus(p)==='완료').length}건 (프로젝트 탭)`:''}</div></div>
     <div class="actions"><button class="btn" data-action="add-task" data-day="${ui.selDay}">${ICON.plus}할 일</button><button class="btn" data-action="add-material">${ICON.plus}자재</button><button class="btn primary" data-action="add-event" data-day="${ui.selDay}">${ICON.plus}일정</button></div></div>
     ${calendarHTML()}
     <section class="home-board"><h2>프로젝트 현황</h2><div class="board">${board}</div></section>`;
@@ -484,7 +507,8 @@ function renderProjects(){
   const today=todayISO(), pv=ui.projView;
   const sortTasks=ts=>ts.slice().sort((a,b)=>(a.done-b.done)||((a.dueDate||'9')<(b.dueDate||'9')?-1:1));
   const visible=t=>ui.showDone||!t.done||ui.keepShown.has(t.id);
-  const byDue=(a,b)=>((a.dueDate||'9')<(b.dueDate||'9')?-1:(a.dueDate||'9')>(b.dueDate||'9')?1:0)||a.name.localeCompare(b.name);
+  const endOf=p=>projDates(p).end||'9';
+  const byDue=(a,b)=>(endOf(a)<endOf(b)?-1:endOf(a)>endOf(b)?1:0)||a.name.localeCompare(b.name);
   const byStatus=(a,b)=>(PROJECT_STATUS.indexOf(projStatus(a))-PROJECT_STATUS.indexOf(projStatus(b)))||byDue(a,b);
   const sectionHTML=p=>{
     const pr=projectProgress(p), st=projStatus(p);
@@ -492,7 +516,7 @@ function renderProjects(){
     const shown=sortTasks(pr.ts.filter(visible)), hidden=pr.ts.length-shown.length;
     return `<section class="panel proj-sec ${st==='완료'?'is-done':''}">
       <div class="proj-head">
-        <div class="proj-title"><h2>${esc(p.name)}</h2><span class="m">${[p.client,p.dueDate?'목표 '+longDate(p.dueDate):'',p.notes].filter(Boolean).map(esc).join(' · ')}</span></div>
+        <div class="proj-title"><h2>${esc(p.name)}</h2><span class="m">${[p.client,projRangeText(p),p.notes].filter(Boolean).map(esc).join(' · ')}</span></div>
         <span class="pill tone-${PROJECT_TONE[st]}">${esc(st)}${st==='진행 중'&&pr.total?' · '+pr.pct+'%':''}</span>
         <div class="proj-tools"><button class="btn sm ghost" data-action="edit-project" data-id="${p.id}" aria-label="프로젝트 수정">${ICON.edit}</button><button class="btn sm" data-action="add-task" data-project="${p.id}">${ICON.plus}할 일</button></div>
       </div>
@@ -595,11 +619,11 @@ function renderMaterials(){
 function calendarItems(y,m){
   const map=new Map(), add=(iso,it)=>{ if(!map.has(iso)) map.set(iso,[]); map.get(iso).push(it); };
   const today=todayISO();
-  if(ui.layers.events) for(const e of D.events){ if(!e.start) continue; const end=e.end&&e.end>=e.start?e.end:e.start; let d=e.start,i=0; while(d<=end&&i<120){ add(d,{kind:'event',tone:EVENT_TONE[e.type]||'gray',label:e.title,sub:(e.type||'일정')+(e.projectId?' · '+projName(e.projectId):''),action:'edit-event',id:e.id}); d=addDays(d,1); i++; } }
-  if(ui.layers.projects) for(const p of D.projects){ if(!p.dueDate) continue; const st=projStatus(p); add(p.dueDate,{kind:'project',tone:PROJECT_TONE[st],label:p.name,sub:'프로젝트 '+st+(st!=='완료'&&p.dueDate<today?' · 목표일 지남':' · 목표일'),action:'edit-project',id:p.id}); }
-  if(ui.layers.eta) for(const mt of D.materials){ if(!mt.etaDate) continue; const tone=!isOpen(mt)?'ok':(mt.etaDate<today?'crit':'accent'); add(mt.etaDate,{kind:'eta',tone,label:'입고 '+mt.name,sub:(isOpen(mt)?(mt.etaDate<today?'입고 지연':'입고 예정'):'입고 완료')+' · '+projName(mt.projectId),action:'edit-material',id:mt.id}); }
-  if(ui.layers.tasks) for(const t of D.tasks){ if(!t.dueDate) continue; const tone=t.done?'ok':(t.dueDate<today?'crit':'warn'); add(t.dueDate,{kind:'task',tone,label:'할일 '+t.title,sub:(t.done?'완료':(t.dueDate<today?'할 일 지연':'할 일 마감'))+(t.projectId?' · '+projName(t.projectId):''),action:'edit-task',id:t.id}); }
-  if(ui.layers.order) for(const mt of D.materials){ if(!mt.orderDate) continue; add(mt.orderDate,{kind:'order',tone:'gray',label:'발주 '+mt.name,sub:'발주 · '+projName(mt.projectId),action:'edit-material',id:mt.id}); }
+  if(ui.layers.events) for(const e of D.events){ if(!e.start) continue; const end=e.end&&e.end>=e.start?e.end:e.start; let d=e.start,i=0; while(d<=end&&i<120){ add(d,{kind:'event',icon:EVENT_ICON[e.type]||'note',tone:EVENT_TONE[e.type]||'gray',label:e.title,sub:(e.type||'일정')+(e.projectId?' · '+projName(e.projectId):''),action:'edit-event',id:e.id}); d=addDays(d,1); i++; } }
+  if(ui.layers.projects) for(const p of D.projects){ const {start,end}=projDates(p); if(!end) continue; const st=projStatus(p); const sub='프로젝트 '+st+' · '+(start!==end?shortDate(start)+' ~ '+shortDate(end):(st!=='완료'&&end<today?'목표일 지남':'목표일')); let d=start,i=0; while(d<=end&&i<120){ add(d,{kind:'project',icon:'target',tone:PROJECT_TONE[st],label:p.name,sub,action:'edit-project',id:p.id}); d=addDays(d,1); i++; } }
+  if(ui.layers.eta) for(const mt of D.materials){ if(!mt.etaDate) continue; const tone=!isOpen(mt)?'ok':(mt.etaDate<today?'crit':'accent'); add(mt.etaDate,{kind:'eta',icon:'box',tone,label:mt.name,sub:(isOpen(mt)?(mt.etaDate<today?'입고 지연':'입고 예정'):'입고 완료')+' · '+projName(mt.projectId),action:'edit-material',id:mt.id}); }
+  if(ui.layers.tasks) for(const t of D.tasks){ if(!t.dueDate) continue; const tone=t.done?'ok':(t.dueDate<today?'crit':'warn'); add(t.dueDate,{kind:'task',icon:'check',tone,label:t.title,sub:(t.done?'완료':(t.dueDate<today?'할 일 지연':'할 일 마감'))+(t.projectId?' · '+projName(t.projectId):''),action:'edit-task',id:t.id}); }
+  if(ui.layers.order) for(const mt of D.materials){ if(!mt.orderDate) continue; add(mt.orderDate,{kind:'order',icon:'cart',tone:'gray',label:mt.name,sub:'발주 · '+projName(mt.projectId),action:'edit-material',id:mt.id}); }
   return map;
 }
 function calendarHTML(){
@@ -610,13 +634,13 @@ function calendarHTML(){
   const grid=cells.map((iso,i)=>{
     if(!iso) return '<div class="cell pad"></div>';
     const its=items.get(iso)||[], dow=i%7, dn=Number(iso.slice(8));
-    const chips=its.slice(0,3).map(it=>`<span class="chip tone-${it.tone}${it.kind==='project'?' proj':''}">${esc(it.label)}</span>`).join('')+(its.length>3?`<span class="chip more">+${its.length-3}</span>`:'');
+    const chips=its.slice(0,3).map(it=>`<span class="chip tone-${it.tone}${it.kind==='project'?' proj':''}" title="${esc(it.sub)}">${ICON[it.icon]||''}<span>${esc(it.label)}</span></span>`).join('')+(its.length>3?`<span class="chip more">+${its.length-3}</span>`:'');
     const dots=its.slice(0,4).map(it=>`<i class="dot-${it.tone}"></i>`).join('');
     return `<button class="cell ${iso===today?'today':''} ${iso===ui.selDay?'sel':''} ${dow===0?'sun':(dow===6?'sat':'')}" data-action="cal-day" data-day="${iso}">
       <span class="dn"><b>${dn}</b>${its.length?`<span>${its.length}</span>`:''}</span>${chips}<span class="dots">${dots}</span></button>`;
   }).join('');
   const sel=ui.selDay, selItems=items.get(sel)||[], sd=parseISO(sel);
-  const dayList=selItems.length?selItems.map(it=>`<button class="day-item" data-action="${it.action}" data-id="${it.id}" style="--c:var(--${it.tone})"><i></i><span><span class="t">${esc(it.label)}</span><br><span class="m">${esc(it.sub)}</span></span></button>`).join('')
+  const dayList=selItems.length?selItems.map(it=>`<button class="day-item" data-action="${it.action}" data-id="${it.id}" style="--c:var(--${it.tone})"><i></i><span><span class="t">${ICON[it.icon]||''}${esc(it.label)}</span><br><span class="m">${esc(it.sub)}</span></span></button>`).join('')
     :`<div class="empty"><b>${sel===today?'오늘은':'이 날은'} 비어 있어요</b>위의 + 할 일, + 일정 버튼으로 이 날짜에 추가할 수 있어요.</div>`;
   const dayTitle=sel===today?'오늘 할 일':`${sd.getMonth()+1}/${sd.getDate()} (${DOW[sd.getDay()]}) 할 일`;
   const layer=(k,l)=>`<button class="layer" data-action="layer" data-layer="${k}" aria-pressed="${ui.layers[k]}"><i></i>${l}</button>`;
@@ -710,9 +734,10 @@ function projectForm(p,preset){
       {key:'name',label:'과제명',value:p.name,required:true,span:true,placeholder:'예: IT 정면시야각 검사기 (#10, #11)'},
       {key:'client',label:'고객사',value:p.client,suggest:vendorNames('고객사'),placeholder:'업체 탭에 등록한 고객사가 제안돼요'},
       {key:'status',label:'상태',type:'select',options:PROJECT_STATUS,value:projStatus(p)},
-      {key:'dueDate',label:'목표일 (납기) · 달력에 표시돼요',type:'date',value:p.dueDate},
+      {key:'startDate',label:'시작일',type:'date',value:projDates(p).start},
+      {key:'endDate',label:'종료일 (하루면 비워 두세요)',type:'date',value:p.endDate||p.dueDate},
       {key:'notes',label:'메모',type:'textarea',value:p.notes,span:true}],
-    onSubmit:async v=>{ await store.put('projects',Object.assign({},p,v,{id:p.id||uid(),createdAt:p.createdAt||new Date().toISOString()})); toast(isNew?'프로젝트를 추가했어요.':'저장했어요.'); },
+    onSubmit:async v=>{ if(v.endDate&&v.startDate&&v.endDate<v.startDate) v.endDate=v.startDate; if(!v.endDate) v.endDate=v.startDate; v.dueDate=''; await store.put('projects',Object.assign({},p,v,{id:p.id||uid(),createdAt:p.createdAt||new Date().toISOString()})); toast(isNew?'프로젝트를 추가했어요.':'저장했어요.'); },
     onDelete:isNew?null:async()=>{
       const linked=D.materials.filter(m=>m.projectId===p.id);
       if(!await askConfirm(`"${p.name}" 프로젝트를 삭제할까요?${linked.length?`\n연결된 자재 ${linked.length}건은 남고 프로젝트 연결만 해제됩니다.`:''}`)) return;
