@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>프로젝트 체크리스트</title>
+<title>WorkBoard</title>
 <meta name="theme-color" content="#0E6F8E">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png" type="image/png">
@@ -321,8 +321,8 @@ dialog.cfm{width:min(380px,calc(100vw - 32px))}
 
 <div id="app">
   <aside class="side">
-    <div class="brand"><strong>프로젝트 체크리스트</strong></div>
-    <button class="nav" data-action="nav" data-tab="home">${ICON.home}<span>현황</span></button>
+    <div class="brand"><strong>WorkBoard</strong></div>
+    <button class="nav" data-action="nav" data-tab="home">${ICON.home}<span>캘린더</span></button>
     <button class="nav" data-action="nav" data-tab="projects">${ICON.task}<span>프로젝트 · 할 일</span></button>
     <button class="nav" data-action="nav" data-tab="materials">${ICON.mat}<span>자재</span></button>
     <button class="nav" data-action="nav" data-tab="vendors">${ICON.biz}<span>업체</span></button>
@@ -335,7 +335,7 @@ dialog.cfm{width:min(380px,calc(100vw - 32px))}
   </aside>
   <main class="main" id="main"></main>
   <nav class="tabbar">
-    <button class="tab" data-action="nav" data-tab="home">${ICON.home}현황</button>
+    <button class="tab" data-action="nav" data-tab="home">${ICON.home}캘린더</button>
     <button class="tab" data-action="nav" data-tab="projects">${ICON.task}프로젝트</button>
     <button class="tab" data-action="nav" data-tab="materials">${ICON.mat}자재</button>
     <button class="tab" data-action="nav" data-tab="vendors">${ICON.biz}업체</button>
@@ -506,7 +506,7 @@ function renderHome(){
       <button class="col-add" data-action="add-project" data-status="${esc(st)}">${ICON.plus}새 프로젝트</button>
     </section>`;
   }).join('');
-  return `<div class="topbar"><div><h1>현황</h1><div class="sub">${new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})} · 프로젝트 ${D.projects.length}건${D.projects.filter(p=>projStatus(p)==='완료').length?` · 완료 ${D.projects.filter(p=>projStatus(p)==='완료').length}건 (프로젝트 탭)`:''}</div></div>
+  return `<div class="topbar"><div><h1>프로젝트 캘린더</h1><div class="sub">${new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})} · 프로젝트 ${D.projects.length}건${D.projects.filter(p=>projStatus(p)==='완료').length?` · 완료 ${D.projects.filter(p=>projStatus(p)==='완료').length}건 (프로젝트 탭)`:''}</div></div>
     <div class="actions"><button class="btn" data-action="add-task" data-day="${ui.selDay}">${ICON.plus}할 일</button><button class="btn" data-action="add-material">${ICON.plus}자재</button><button class="btn primary" data-action="add-event" data-day="${ui.selDay}">${ICON.plus}일정</button></div></div>
     ${calendarHTML()}
     <section class="home-board"><h2>프로젝트 현황</h2><div class="board">${board}</div></section>`;

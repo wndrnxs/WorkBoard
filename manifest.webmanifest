@@ -1,6 +1,6 @@
 {
-  "name": "프로젝트 체크리스트",
-  "short_name": "체크리스트",
+  "name": "WorkBoard",
+  "short_name": "WorkBoard",
   "description": "검사기 프로젝트의 일정, 할 일, 자재 입고를 한 화면에서 관리",
   "start_url": "./index.html",
   "scope": "./",
