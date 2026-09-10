@@ -160,7 +160,12 @@ a{color:var(--accent)}
 .mat-link{color:var(--muted);font-family:var(--mono);font-size:12px}
 .mat-link svg{width:13px;height:13px}
 .empty.small{padding:16px}
-.hidden-note{padding:8px 16px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+.hidden-note{display:block;width:100%;padding:8px 16px;font-size:12px;color:var(--accent);border:0;border-top:1px solid var(--line);background:transparent;text-align:left;cursor:pointer}
+.hidden-note:hover{background:var(--surface-2)}
+.proj-group{display:flex;align-items:center;gap:10px;margin:8px 0 -4px;font-size:13px;font-weight:600;color:var(--muted)}
+.proj-group:first-child{margin-top:0}
+.proj-group .cnt{font-family:var(--mono);font-weight:400;font-size:12px}
+.proj-group::after{content:'';flex:1;height:1px;background:var(--line)}
 .switch{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer;padding:6px 4px}
 .switch input{accent-color:var(--accent);width:16px;height:16px;margin:0}
 .vendor-row{grid-template-columns:minmax(0,1fr) auto auto}
@@ -358,7 +363,8 @@ const addDays=(iso,n)=>{const d=parseISO(iso);d.setDate(d.getDate()+n);return fm
 const diffDays=(a,b)=>Math.round((parseISO(a)-parseISO(b))/86400000);
 const shortDate=iso=>iso?iso.slice(5).replace('-','/'):'';
 
-const ui={tab:'home',matFilter:{project:'',stage:'',q:''},showDone:false,cal:(()=>{const d=new Date();return {y:d.getFullYear(),m:d.getMonth()};})(),selDay:todayISO(),layers:{events:true,projects:true,eta:true,tasks:true,order:false}};
+const PREFS_KEY='inspector-board-prefs';
+const ui={tab:'home',matFilter:{project:'',stage:'',q:''},projView:{group:'status',status:'',client:''},showDone:false,keepShown:new Set(),cal:(()=>{const d=new Date();return {y:d.getFullYear(),m:d.getMonth()};})(),selDay:todayISO(),layers:{events:true,projects:true,eta:true,tasks:true,order:false}};
 
 const store={
   mode:'local',db:null,downloads:null,loaded:{projects:false,materials:false,events:false,tasks:false,vendors:false},
@@ -400,6 +406,9 @@ const store={
 };
 
 const D=store.data;
+function loadPrefs(){ try{ const p=JSON.parse(localStorage.getItem(PREFS_KEY)||'{}'); if(p.projView) Object.assign(ui.projView,p.projView); if(typeof p.showDone==='boolean') ui.showDone=p.showDone; }catch(e){} }
+function savePrefs(){ try{ localStorage.setItem(PREFS_KEY,JSON.stringify({projView:ui.projView,showDone:ui.showDone})); }catch(e){} }
+loadPrefs();
 const projById=id=>D.projects.find(p=>p.id===id);
 const projName=id=>{const p=projById(id);return p?p.name:(id?'(삭제된 프로젝트)':'미배정');};
 const projStatus=p=>p.status==='대기'?'진행대기':(PROJECT_STATUS.includes(p.status)?p.status:'진행 중');
@@ -472,12 +481,15 @@ function taskRowHTML(t){
   </div>`;
 }
 function renderProjects(){
-  const today=todayISO();
+  const today=todayISO(), pv=ui.projView;
   const sortTasks=ts=>ts.slice().sort((a,b)=>(a.done-b.done)||((a.dueDate||'9')<(b.dueDate||'9')?-1:1));
-  const sections=D.projects.slice().sort((a,b)=>(PROJECT_STATUS.indexOf(projStatus(a))-PROJECT_STATUS.indexOf(projStatus(b)))||(a.client||'').localeCompare(b.client||'')).map(p=>{
+  const visible=t=>ui.showDone||!t.done||ui.keepShown.has(t.id);
+  const byDue=(a,b)=>((a.dueDate||'9')<(b.dueDate||'9')?-1:(a.dueDate||'9')>(b.dueDate||'9')?1:0)||a.name.localeCompare(b.name);
+  const byStatus=(a,b)=>(PROJECT_STATUS.indexOf(projStatus(a))-PROJECT_STATUS.indexOf(projStatus(b)))||byDue(a,b);
+  const sectionHTML=p=>{
     const pr=projectProgress(p), st=projStatus(p);
     const next=pr.ms.filter(m=>isOpen(m)&&m.etaDate).sort((a,b)=>a.etaDate<b.etaDate?-1:1)[0];
-    const shown=sortTasks(ui.showDone?pr.ts:pr.ts.filter(t=>!t.done)), hidden=pr.ts.length-shown.length;
+    const shown=sortTasks(pr.ts.filter(visible)), hidden=pr.ts.length-shown.length;
     return `<section class="panel proj-sec ${st==='완료'?'is-done':''}">
       <div class="proj-head">
         <div class="proj-title"><h2>${esc(p.name)}</h2><span class="m">${[p.client,p.dueDate?'목표 '+longDate(p.dueDate):'',p.notes].filter(Boolean).map(esc).join(' · ')}</span></div>
@@ -487,14 +499,35 @@ function renderProjects(){
       <div class="proj-meta">${progressHTML(pr)}
         <button class="btn sm ghost mat-link" data-action="goto-mat" data-project="${p.id}">자재 ${pr.mDone}/${pr.ms.length} 입고${next?' · 다음 '+shortDate(next.etaDate):''}${ICON.chev}</button></div>
       <div class="list">${shown.map(taskRowHTML).join('')||`<div class="empty small">${pr.ts.length?'남은 할 일이 없어요':'할 일을 추가해 진행률에 반영해 보세요'}</div>`}</div>
-      ${hidden?`<div class="hidden-note">완료된 할 일 ${hidden}건 숨김</div>`:''}
-    </section>`;}).join('');
-  const orphans=sortTasks(D.tasks.filter(t=>!t.projectId||!projById(t.projectId)).filter(t=>ui.showDone||!t.done));
+      ${hidden?`<button class="hidden-note" data-action="show-done">완료된 할 일 ${hidden}건 보기</button>`:''}
+    </section>`;};
+  const groupHead=(label,n)=>`<div class="proj-group">${label}<span class="cnt">${n}건</span></div>`;
+  let list=D.projects.slice();
+  if(pv.status) list=list.filter(p=>projStatus(p)===pv.status);
+  if(pv.client) list=list.filter(p=>(p.client||'')===(pv.client==='__none'?'':pv.client));
+  let body='';
+  if(pv.group==='client'){
+    const clients=[...new Set(list.map(p=>p.client||''))].sort((a,b)=>a===''?1:b===''?-1:a.localeCompare(b));
+    body=clients.map(c=>{ const ps=list.filter(p=>(p.client||'')===c).sort(byStatus); return groupHead(c?esc(c):'고객사 미지정',ps.length)+ps.map(sectionHTML).join(''); }).join('');
+  }else if(pv.group==='due'){
+    body=list.sort(byDue).map(sectionHTML).join('');
+  }else{
+    body=PROJECT_STATUS.map(st=>{ const ps=list.filter(p=>projStatus(p)===st).sort(byDue); if(!ps.length) return ''; return groupHead(`<span class="pill tone-${PROJECT_TONE[st]}">${esc(st)}</span>`,ps.length)+ps.map(sectionHTML).join(''); }).join('');
+  }
+  const filtered=!!(pv.status||pv.client);
+  const orphans=filtered?[]:sortTasks(D.tasks.filter(t=>!t.projectId||!projById(t.projectId)).filter(visible));
   const orphanSec=orphans.length?`<section class="panel proj-sec"><div class="proj-head"><div class="proj-title"><h2>프로젝트 미배정</h2></div></div><div class="list">${orphans.map(taskRowHTML).join('')}</div></section>`:'';
-  const open=D.tasks.filter(t=>!t.done).length, late=D.tasks.filter(t=>!t.done&&t.dueDate&&t.dueDate<today).length;
-  return `<div class="topbar"><div><h1>프로젝트 · 할 일</h1><div class="sub">프로젝트 ${D.projects.length}건 · 미완료 할 일 ${open}건${late?` · <span style="color:var(--crit)">지연 ${late}건</span>`:''}</div></div>
-    <div class="actions"><label class="switch"><input type="checkbox" id="showDone" data-action="toggle-show-done" ${ui.showDone?'checked':''}>완료 표시</label><button class="btn" data-action="add-task">${ICON.plus}할 일</button><button class="btn primary" data-action="add-project">${ICON.plus}프로젝트</button></div></div>
-    <div class="proj-list">${sections||`<div class="panel"><div class="empty"><b>등록된 프로젝트가 없어요</b>오른쪽 위 버튼으로 과제를 추가하세요.</div></div>`}${orphanSec}</div>`;
+  const open=D.tasks.filter(t=>!t.done).length, late=D.tasks.filter(t=>!t.done&&t.dueDate&&t.dueDate<today).length, doneCnt=D.tasks.length-open;
+  const clientOpts=[...new Set(D.projects.map(p=>p.client||''))].sort((a,b)=>a===''?1:b===''?-1:a.localeCompare(b)).map(c=>`<option value="${c?esc(c):'__none'}" ${pv.client===(c||'__none')?'selected':''}>${c?esc(c):'고객사 미지정'}</option>`).join('');
+  const empty=D.projects.length?`<div class="panel"><div class="empty"><b>조건에 맞는 프로젝트가 없어요</b>필터를 바꿔 보세요.</div></div>`:`<div class="panel"><div class="empty"><b>등록된 프로젝트가 없어요</b>오른쪽 위 버튼으로 과제를 추가하세요.</div></div>`;
+  return `<div class="topbar"><div><h1>프로젝트 · 할 일</h1><div class="sub">프로젝트 ${D.projects.length}건 · 미완료 할 일 ${open}건${late?` · <span style="color:var(--crit)">지연 ${late}건</span>`:''}${doneCnt?` · 완료 ${doneCnt}건`:''}</div></div>
+    <div class="actions"><label class="switch"><input type="checkbox" id="showDone" data-action="toggle-show-done" ${ui.showDone?'checked':''}>완료한 할 일 표시</label><button class="btn" data-action="add-task">${ICON.plus}할 일</button><button class="btn primary" data-action="add-project">${ICON.plus}프로젝트</button></div></div>
+    <div class="filters">
+      <select data-pfilter="group" aria-label="보기 방식"><option value="status" ${pv.group==='status'?'selected':''}>진행상황별 보기</option><option value="client" ${pv.group==='client'?'selected':''}>고객사별 보기</option><option value="due" ${pv.group==='due'?'selected':''}>목표일순 보기</option></select>
+      <select data-pfilter="status" aria-label="상태 필터"><option value="">모든 상태</option>${PROJECT_STATUS.map(st=>`<option value="${st}" ${pv.status===st?'selected':''}>${st}</option>`).join('')}</select>
+      <select data-pfilter="client" aria-label="고객사 필터"><option value="">모든 고객사</option>${clientOpts}</select>
+    </div>
+    <div class="proj-list">${body||empty}${orphanSec}</div>`;
 }
 
 function renderVendors(){
@@ -771,6 +804,7 @@ async function toggleMaterial(id){
 async function toggleTask(id){
   const t=D.tasks.find(x=>x.id===id); if(!t) return;
   const done=!t.done;
+  if(done) ui.keepShown.add(id); else ui.keepShown.delete(id); // 방금 완료한 항목은 화면을 떠나기 전까지 보이게 둔다
   try{ await store.put('tasks',Object.assign({},t,{done,doneAt:done?new Date().toISOString():null})); }catch(err){ toast('저장하지 못했어요. 잠시 후 다시 시도해 주세요.'); render(); }
 }
 function importForm(){
@@ -798,11 +832,12 @@ document.addEventListener('click',e=>{
   const el=e.target.closest('[data-action]'); if(!el) return;
   const a=el.dataset.action, id=el.dataset.id;
   switch(a){
-    case 'nav': ui.tab=el.dataset.tab; render(); window.scrollTo(0,0); break;
+    case 'nav': ui.tab=el.dataset.tab; ui.keepShown.clear(); render(); window.scrollTo(0,0); break;
     case 'goto-mat': ui.matFilter={project:el.dataset.project||'',stage:el.dataset.stage||'',q:''}; ui.tab='materials'; render(); window.scrollTo(0,0); break;
     case 'goto-project': ui.tab='projects'; render(); { const sec=document.querySelector(`.proj-sec [data-action="edit-project"][data-id="${el.dataset.project}"]`); if(sec) sec.closest('.proj-sec').scrollIntoView({block:'start'}); else window.scrollTo(0,0); } break;
     case 'add-task': taskForm(null,{projectId:el.dataset.project||'',dueDate:el.dataset.day||''}); break;
-    case 'toggle-show-done': ui.showDone=el.checked; render(); break;
+    case 'toggle-show-done': ui.showDone=el.checked; savePrefs(); render(); break;
+    case 'show-done': ui.showDone=true; savePrefs(); render(); break;
     case 'add-vendor': vendorForm(null); break;
     case 'edit-vendor': { const v=D.vendors.find(x=>x.id===id); if(v) vendorForm(v); break; }
     case 'noop': e.stopPropagation(); break;
@@ -827,6 +862,8 @@ document.addEventListener('click',e=>{
   }
 });
 function onFilter(e){
+  const pf=e.target.dataset&&e.target.dataset.pfilter;
+  if(pf){ if(e.type!=='change') return; ui.projView[pf]=e.target.value; savePrefs(); render(); return; }
   const f=e.target.dataset&&e.target.dataset.filter; if(!f) return;
   const isSelect=e.target.tagName==='SELECT';
   if((isSelect&&e.type!=='change')||(!isSelect&&e.type!=='input')) return;
