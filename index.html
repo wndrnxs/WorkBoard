@@ -9,7 +9,7 @@
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
 <style>
 :root{
   color-scheme: light;
@@ -52,6 +52,7 @@
   --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.45);
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{height:100%}
 body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -312,6 +313,30 @@ dialog.cfm{width:min(380px,calc(100vw - 32px))}
 .dlg-f .r{display:flex;gap:8px}
 .help{grid-column:1/-1;font-size:12.5px;color:var(--muted);line-height:1.55;margin:0}
 
+.gate{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:var(--bg)}
+.gate-card{width:min(360px,100%);display:flex;flex-direction:column;gap:12px;padding:26px 24px;border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:var(--shadow)}
+.gate-card .brand-row{display:flex;align-items:center;gap:10px}
+.gate-card .brand-row img{width:36px;height:36px;border-radius:8px}
+.gate-card h1{font-size:18px;letter-spacing:-.01em}
+.gate-card .hint{font-size:12.5px;color:var(--muted);margin:-4px 0 4px}
+.gate-card label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
+.gate-card input{padding:9px 11px;border:1px solid var(--line-strong);border-radius:8px;background:var(--bg);width:100%}
+.gate-card .btn{justify-content:center}
+.gate-err{margin:0;padding:8px 10px;border-radius:8px;background:var(--crit-soft);color:var(--crit);font-size:12.5px}
+.gate-note{margin:0;font-size:12px;color:var(--muted);text-align:center}
+.more-list{display:flex;flex-direction:column}
+.more-row{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;text-align:left;cursor:pointer;font-weight:500}
+.more-row:last-child{border-bottom:0}
+.more-row:hover{background:var(--surface-2)}
+.more-row svg{width:18px;height:18px;flex:none;color:var(--muted)}
+.more-row small{margin-left:auto;color:var(--muted);font-weight:400;font-size:12px}
+.acct{display:flex;align-items:center;gap:12px;padding:16px;flex-wrap:wrap}
+.acct>svg{width:30px;height:30px;flex:none;color:var(--muted)}
+.acct .who{flex:1 1 140px}
+.acct .who{display:flex;flex-direction:column;min-width:0}
+.acct .who b{font-weight:500;overflow:hidden;text-overflow:ellipsis}
+.acct .who small{color:var(--muted);font-size:12px}
+.acct .btn{margin-left:auto}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(8px);padding:9px 14px;border-radius:8px;background:var(--ink);color:var(--bg);font-size:13px;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:50;max-width:calc(100vw - 32px)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
@@ -331,7 +356,7 @@ dialog.cfm{width:min(380px,calc(100vw - 32px))}
   .main{padding:16px 16px 88px}
   .topbar{margin-bottom:14px}
   .topbar h1{font-size:19px}
-  .tabbar{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
   .tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px 7px;border:0;background:transparent;color:var(--muted);font-size:11px;cursor:pointer}
   .tab svg{width:20px;height:20px}
   .tab[aria-current="page"]{color:var(--accent)}
@@ -352,7 +377,18 @@ dialog.cfm{width:min(380px,calc(100vw - 32px))}
 </head>
 <body>
 
-<div id="app">
+<div class="gate" id="gate" hidden>
+  <form class="gate-card" id="loginForm" novalidate>
+    <div class="brand-row"><img src="icon-192.png" alt=""><h1>WorkBoard</h1></div>
+    <p class="hint">등록된 계정으로 로그인하세요.</p>
+    <label for="liEmail">이메일<input id="liEmail" type="email" autocomplete="username" required></label>
+    <label for="liPw">비밀번호<input id="liPw" type="password" autocomplete="current-password" required></label>
+    <p class="gate-err" id="liErr" hidden></p>
+    <button class="btn primary" type="submit" id="liBtn">로그인</button>
+    <p class="gate-note">비밀번호를 잊으셨나요? <a href="#" data-action="reset-pw">재설정 메일 받기</a></p>
+  </form>
+</div>
+<div id="app" hidden>
   <aside class="side">
     <div class="brand"><strong>WorkBoard</strong></div>
     <button class="nav" data-action="nav" data-tab="home">${ICON.home}<span>캘린더</span></button>
@@ -363,6 +399,7 @@ dialog.cfm{width:min(380px,calc(100vw - 32px))}
     <div class="side-actions">
       <button class="nav" data-action="export">${ICON.dl}<span>백업 내보내기</span></button>
       <button class="nav" data-action="import">${ICON.ul}<span>백업 가져오기</span></button>
+      <button class="nav" data-action="logout" hidden id="navLogout">${ICON.out}<span>로그아웃</span></button>
     </div>
     <div class="sync" id="sync" data-mode="local"><i></i><span>연결 확인 중</span></div>
   </aside>
@@ -372,6 +409,7 @@ dialog.cfm{width:min(380px,calc(100vw - 32px))}
     <button class="tab" data-action="nav" data-tab="projects">${ICON.task}프로젝트</button>
     <button class="tab" data-action="nav" data-tab="materials">${ICON.mat}자재</button>
     <button class="tab" data-action="nav" data-tab="vendors">${ICON.biz}업체</button>
+    <button class="tab" data-action="nav" data-tab="more">${ICON.more}더보기</button>
   </nav>
 </div>
 <dialog id="dlg"><form id="dlgForm" novalidate></form></dialog>
@@ -415,6 +453,9 @@ const ICON={
   flag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h13l-3 4 3 4H5"/></svg>',
   inspect:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>',
   cart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.5 11h11L21 7H6.5"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/></svg>',
+  more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>',
+  user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>',
+  out:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 012 2v12a2 2 0 01-2 2h-3"/><path d="M10 8l-4 4 4 4M6 12h9"/></svg>',
   note:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h6M9 16h6"/></svg>',
 };
 const EVENT_ICON={'회의':'meet','납기':'flag','출장':'plane','검수':'inspect','기타':'note'};
@@ -433,14 +474,27 @@ const shortDate=iso=>iso?iso.slice(5).replace('-','/'):'';
 const PREFS_KEY='inspector-board-prefs';
 const ui={tab:'home',detail:'',matFilter:{project:'',stage:'',q:''},projView:{group:'status',status:'',client:''},showDone:false,keepShown:new Set(),cal:(()=>{const d=new Date();return {y:d.getFullYear(),m:d.getMonth()};})(),selDay:todayISO(),layers:{events:true,projects:true,eta:true,tasks:true,order:false}};
 
+const FB_CONFIG={
+  apiKey:"AIzaSyCIVpoSHXL8hEf6D8qyeTnoHWBjMrSR8PA",
+  authDomain:"workboard-3460b.firebaseapp.com",
+  projectId:"workboard-3460b",
+  storageBucket:"workboard-3460b.firebasestorage.app",
+  messagingSenderId:"951751728575",
+  appId:"1:951751728575:web:a8e060ff5eb3d026ac550a"
+};
+const fb={auth:null,db:null,user:null,ready:false};
+
 const store={
   mode:'local',db:null,downloads:null,loaded:{projects:false,materials:false,events:false,tasks:false,vendors:false},
   data:{projects:[],materials:[],events:[],tasks:[],vendors:[]},
   async init(){
-    let db=null;
-    try{ db=(window.claude&&typeof window.claude.use==='function')?await window.claude.use('db'):null; }catch(e){ db=null; }
-    if(db){ this.db=db; this.mode='cloud'; this.subscribe(); this.offerMigration(); }
-    else{ this.mode='local'; this.loadLocal(); COLS.forEach(c=>this.loaded[c]=true); }
+    if(fb.db){ this.db=fb.db; this.mode='firebase'; this.subscribe(); this.offerMigration(); }
+    else{
+      let db=null;
+      try{ db=(window.claude&&typeof window.claude.use==='function')?await window.claude.use('db'):null; }catch(e){ db=null; }
+      if(db){ this.db=db; this.mode='cloud'; this.subscribe(); this.offerMigration(); }
+      else{ this.mode='local'; this.loadLocal(); COLS.forEach(c=>this.loaded[c]=true); }
+    }
     try{ this.downloads=(window.claude&&typeof window.claude.use==='function')?await window.claude.use('downloads'):null; }catch(e){ this.downloads=null; }
     renderSync(); render();
   },
@@ -450,7 +504,7 @@ const store={
         this.data[col]=snap.docs.filter(d=>d.exists).map(d=>Object.assign({id:d.id},d.data()));
         this.loaded[col]=true; render();
         if(COLS.every(c=>this.loaded[c])&&this._onLoaded){ const f=this._onLoaded; this._onLoaded=null; f(); }
-      },err=>{ toast('동기화가 끊겼어요. 페이지를 새로고침해 주세요.'); });
+      },err=>{ toast(err&&err.code==='permission-denied'?'읽기 권한이 없어요. 보안 규칙을 확인해 주세요.':'동기화가 끊겼어요. 페이지를 새로고침해 주세요.'); });
     }
   },
   // 클라우드 모드로 열렸는데 서버가 비어 있고 이 브라우저에 예전 데이터가 남아 있으면 한 번에 옮겨 준다.
@@ -470,15 +524,15 @@ const store={
   loadLocal(){ try{ const raw=localStorage.getItem(LS_KEY); if(raw){ const p=JSON.parse(raw); for(const c of COLS) if(Array.isArray(p[c])) this.data[c]=p[c]; } }catch(e){} },
   saveLocal(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(this.data)); }catch(e){ toast('이 브라우저에 저장하지 못했어요.'); } },
   async put(col,obj){
-    if(this.mode==='cloud'){ const body=Object.assign({},obj); delete body.id; await this.db.doc(col+'/'+obj.id).set(body); }
+    if(this.mode!=='local'){ const body=Object.assign({},obj); delete body.id; await this.db.doc(col+'/'+obj.id).set(body); }
     else{ const arr=this.data[col]; const i=arr.findIndex(x=>x.id===obj.id); if(i>=0) arr[i]=obj; else arr.push(obj); this.saveLocal(); render(); }
   },
   async remove(col,id){
-    if(this.mode==='cloud'){ await this.db.doc(col+'/'+id).delete(); }
+    if(this.mode!=='local'){ await this.db.doc(col+'/'+id).delete(); }
     else{ this.data[col]=this.data[col].filter(x=>x.id!==id); this.saveLocal(); render(); }
   },
   async replaceAll(next){
-    if(this.mode==='cloud'){
+    if(this.mode!=='local'){
       for(const col of COLS){
         for(const d of this.data[col]) await this.db.doc(col+'/'+d.id).delete();
         for(const d of next[col]||[]){ const body=Object.assign({},d); delete body.id; await this.db.doc(col+'/'+(d.id||uid())).set(body); }
@@ -510,7 +564,9 @@ function projectProgress(p){
 
 function renderSync(){
   const el=document.getElementById('sync'); el.dataset.mode=store.mode;
-  el.querySelector('span').textContent=store.mode==='cloud'?'클라우드 동기화 · 모든 기기에서 공유':'이 브라우저에만 저장';
+  el.dataset.mode=store.mode==='local'?'local':'cloud';
+  el.querySelector('span').textContent=store.mode==='local'?'이 브라우저에만 저장':(fb.user?'클라우드 저장 · '+fb.user.email:'클라우드 동기화 · 모든 기기에서 공유');
+  const lo=document.getElementById('navLogout'); if(lo) lo.hidden=!fb.user;
 }
 const vendorNames=type=>{ const s=new Set(); for(const v of D.vendors) if(!type||v.type===type) s.add(v.name); return [...s]; };
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2600); }
@@ -521,7 +577,7 @@ function render(){
   const main=document.getElementById('main');
   const loading=!COLS.every(c=>store.loaded[c]);
   if(loading){ main.innerHTML='<div class="topbar"><div><h1>불러오는 중</h1><div class="sub">저장된 데이터를 가져오고 있어요.</div></div></div>'; return; }
-  main.innerHTML={home:renderHome,projects:renderProjects,materials:renderMaterials,vendors:renderVendors}[ui.tab]();
+  main.innerHTML={home:renderHome,projects:renderProjects,materials:renderMaterials,vendors:renderVendors,more:renderMore}[ui.tab]();
 }
 
 function progressHTML(pr){
@@ -618,6 +674,20 @@ function renderProjects(){
       <select data-pfilter="client" aria-label="고객사 필터"><option value="">모든 고객사</option>${clientOpts}</select>
     </div>
     <div class="proj-list">${body||empty}${orphanSec}</div>`;
+}
+
+function renderMore(){
+  const mode=store.mode==='local'?'이 브라우저에만 저장':'클라우드 저장 · 모든 기기에서 공유';
+  const acct=fb.user?`<div class="panel"><div class="panel-h"><h2>계정</h2></div>
+      <div class="acct">${ICON.user}<span class="who"><b>${esc(fb.user.email||'')}</b><small>${esc(mode)}</small></span>
+      <button class="btn sm" data-action="logout">${ICON.out}로그아웃</button></div></div>`
+    :`<div class="panel"><div class="panel-h"><h2>저장 상태</h2></div><div class="acct">${ICON.user}<span class="who"><b>${esc(mode)}</b><small>${store.mode==='local'?'백업을 내보내 두세요':'로그인한 계정으로 동기화됩니다'}</small></span></div></div>`;
+  return `<div class="topbar"><div><h1>더보기</h1><div class="sub">백업과 계정을 관리해요</div></div></div>
+    ${acct}
+    <div class="panel" style="margin-top:16px"><div class="panel-h"><h2>백업</h2></div><div class="more-list">
+      <button class="more-row" data-action="export">${ICON.dl}백업 내보내기<small>JSON 파일로 저장</small></button>
+      <button class="more-row" data-action="import">${ICON.ul}백업 가져오기<small>현재 데이터를 교체</small></button>
+    </div></div>`;
 }
 
 function renderVendors(){
@@ -1048,6 +1118,8 @@ document.addEventListener('click',e=>{
     case 'cal-today': { const d=new Date(); ui.cal={y:d.getFullYear(),m:d.getMonth()}; ui.selDay=todayISO(); render(); break; }
     case 'cal-day': ui.selDay=el.dataset.day; render(); break;
     case 'layer': ui.layers[el.dataset.layer]=!ui.layers[el.dataset.layer]; render(); break;
+    case 'logout': logout(); break;
+    case 'reset-pw': e.preventDefault(); resetPassword(); break;
     case 'export': exportData(); break;
     case 'import': importForm(); break;
     case 'dlg-close': dlg.close(); break;
@@ -1067,8 +1139,64 @@ function onFilter(e){
 document.addEventListener('input',onFilter);
 document.addEventListener('change',onFilter);
 
-render();
-store.init();
+// ---- Firebase 로그인 게이트 ----
+const gate=document.getElementById('gate'), appEl=document.getElementById('app'), loginForm=document.getElementById('loginForm');
+const AUTH_MSG={'auth/invalid-email':'이메일 형식이 올바르지 않아요.','auth/invalid-credential':'이메일 또는 비밀번호가 맞지 않아요.','auth/wrong-password':'이메일 또는 비밀번호가 맞지 않아요.','auth/user-not-found':'등록되지 않은 계정이에요.','auth/user-disabled':'사용이 중지된 계정이에요.','auth/too-many-requests':'시도가 많아 잠시 막혔어요. 잠시 후 다시 시도해 주세요.','auth/network-request-failed':'네트워크에 연결하지 못했어요.'};
+function loginError(msg){ const el=document.getElementById('liErr'); el.textContent=msg; el.hidden=!msg; }
+function showGate(){ gate.hidden=false; appEl.hidden=true; const e=document.getElementById('liEmail'); if(e) e.focus(); }
+function startApp(){
+  gate.hidden=true; appEl.hidden=false;
+  if(store._started) { renderSync(); render(); return; }
+  store._started=true; render(); store.init();
+}
+if(loginForm) loginForm.addEventListener('submit',async e=>{
+  e.preventDefault(); if(!fb.auth) return;
+  const btn=document.getElementById('liBtn'), email=document.getElementById('liEmail').value.trim(), pw=document.getElementById('liPw').value;
+  if(!email||!pw){ loginError('이메일과 비밀번호를 입력해 주세요.'); return; }
+  loginError(''); btn.disabled=true; btn.textContent='로그인 중…';
+  try{ await fb.auth.signInWithEmailAndPassword(email,pw); }
+  catch(err){ loginError(AUTH_MSG[err&&err.code]||'로그인하지 못했어요. 잠시 후 다시 시도해 주세요.'); }
+  finally{ btn.disabled=false; btn.textContent='로그인'; }
+});
+async function resetPassword(){
+  if(!fb.auth) return;
+  const email=(document.getElementById('liEmail')||{}).value?document.getElementById('liEmail').value.trim():'';
+  if(!email){ loginError('먼저 이메일을 입력한 뒤 눌러 주세요.'); return; }
+  try{ await fb.auth.sendPasswordResetEmail(email); loginError(''); toast('재설정 메일을 보냈어요. 메일함을 확인해 주세요.'); }
+  catch(err){ loginError(AUTH_MSG[err&&err.code]||'메일을 보내지 못했어요.'); }
+}
+async function logout(){
+  if(!fb.auth) return;
+  if(!await askConfirm('로그아웃할까요?','로그아웃',true)) return;
+  try{ await fb.auth.signOut(); }catch(err){ toast('로그아웃하지 못했어요.'); }
+}
+const FB_BASE='https://www.gstatic.com/firebasejs/10.14.1/';
+const loadScript=src=>new Promise((res,rej)=>{ const el=document.createElement('script'); el.src=src; el.onload=res; el.onerror=()=>rej(new Error(src)); document.head.appendChild(el); });
+async function loadFirebase(){
+  if(window.firebase&&window.firebase.initializeApp) return true; // 이미 올라와 있으면 그대로 사용
+  await Promise.race([
+    (async()=>{ for(const f of ['firebase-app-compat.js','firebase-auth-compat.js','firebase-firestore-compat.js']) await loadScript(FB_BASE+f); })(),
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000))
+  ]);
+  return !!(window.firebase&&window.firebase.initializeApp);
+}
+async function bootstrap(){
+  showGate();
+  const btn=document.getElementById('liBtn'); btn.disabled=true; btn.textContent='연결 중…';
+  let ok=false;
+  try{ ok=await loadFirebase(); }catch(e){ ok=false; }
+  if(ok){ try{ firebase.initializeApp(FB_CONFIG); fb.auth=firebase.auth(); fb.db=firebase.firestore(); }catch(e){ ok=false; } }
+  btn.disabled=false; btn.textContent='로그인';
+  // 로그인 서버에 닿지 못하면 화면을 막지 않고 이 브라우저 저장으로 동작
+  if(!ok){ startApp(); toast('로그인 서버에 연결하지 못했어요. 지금은 이 브라우저에만 저장돼요.'); return; }
+  fb.auth.onAuthStateChanged(user=>{
+    const was=fb.user; fb.user=user||null;
+    if(user) startApp();
+    else if(was) location.reload(); // 로그아웃 시 화면에 남은 데이터를 비운다
+    else showGate();
+  });
+}
+bootstrap();
 })();
 </script>
 

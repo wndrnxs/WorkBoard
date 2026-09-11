@@ -1,0 +1,11 @@
+rules_version = '2';
+// WorkBoard - 로그인한 사용자만 데이터를 읽고 쓸 수 있습니다.
+// 계정은 Firebase 콘솔 Authentication > Users 에서 직접 추가하세요.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{collection}/{docId} {
+      allow read, write: if request.auth != null
+        && collection in ['projects', 'materials', 'events', 'tasks', 'vendors'];
+    }
+  }
+}
