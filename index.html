@@ -324,6 +324,17 @@ dialog.cfm{width:min(380px,calc(100vw - 32px))}
 .gate-card .btn{justify-content:center}
 .gate-err{margin:0;padding:8px 10px;border-radius:8px;background:var(--crit-soft);color:var(--crit);font-size:12.5px}
 .gate-note{margin:0;font-size:12px;color:var(--muted);text-align:center}
+.notes{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;align-items:start}
+.note{display:flex;flex-direction:column;gap:7px;padding:14px 15px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;text-align:left;color:inherit;min-width:0}
+.note:hover{border-color:var(--line-strong);box-shadow:0 1px 2px rgba(23,33,43,.06)}
+.note-h{display:flex;align-items:center;gap:6px}
+.note-h .date{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.note-t{font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+.note-p{font-size:12px;color:var(--muted)}
+.note-b{font-size:12.5px;color:var(--muted);line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.note-l{display:block;padding:8px 10px;border-radius:8px;background:var(--ok-soft);color:var(--ok);font-size:12.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.note-l b{display:block;font-size:11px;letter-spacing:.03em;opacity:.85;margin-bottom:2px}
+.detail-notes{margin-top:16px}
 .more-list{display:flex;flex-direction:column}
 .more-row{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;border:0;border-bottom:1px solid var(--line);background:transparent;color:inherit;text-align:left;cursor:pointer;font-weight:500}
 .more-row:last-child{border-bottom:0}
@@ -356,8 +367,8 @@ dialog.cfm{width:min(380px,calc(100vw - 32px))}
   .main{padding:16px 16px 88px}
   .topbar{margin-bottom:14px}
   .topbar h1{font-size:19px}
-  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-  .tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px 7px;border:0;background:transparent;color:var(--muted);font-size:11px;cursor:pointer}
+  .tabbar{display:grid;grid-template-columns:repeat(6,1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px 7px;border:0;background:transparent;color:var(--muted);font-size:10.5px;cursor:pointer;min-width:0;white-space:nowrap}
   .tab svg{width:20px;height:20px}
   .tab[aria-current="page"]{color:var(--accent)}
   .board{grid-template-columns:1fr}
@@ -392,7 +403,8 @@ dialog.cfm{width:min(380px,calc(100vw - 32px))}
   <aside class="side">
     <div class="brand"><strong>WorkBoard</strong></div>
     <button class="nav" data-action="nav" data-tab="home">${ICON.home}<span>캘린더</span></button>
-    <button class="nav" data-action="nav" data-tab="projects">${ICON.task}<span>프로젝트 · 할 일</span></button>
+    <button class="nav" data-action="nav" data-tab="projects">${ICON.task}<span>프로젝트 · 작업</span></button>
+    <button class="nav" data-action="nav" data-tab="notes">${ICON.note}<span>메모</span></button>
     <button class="nav" data-action="nav" data-tab="materials">${ICON.mat}<span>자재</span></button>
     <button class="nav" data-action="nav" data-tab="vendors">${ICON.biz}<span>업체</span></button>
     <div class="spacer"></div>
@@ -407,6 +419,7 @@ dialog.cfm{width:min(380px,calc(100vw - 32px))}
   <nav class="tabbar">
     <button class="tab" data-action="nav" data-tab="home">${ICON.home}캘린더</button>
     <button class="tab" data-action="nav" data-tab="projects">${ICON.task}프로젝트</button>
+    <button class="tab" data-action="nav" data-tab="notes">${ICON.note}메모</button>
     <button class="tab" data-action="nav" data-tab="materials">${ICON.mat}자재</button>
     <button class="tab" data-action="nav" data-tab="vendors">${ICON.biz}업체</button>
     <button class="tab" data-action="nav" data-tab="more">${ICON.more}더보기</button>
@@ -420,7 +433,7 @@ dialog.cfm{width:min(380px,calc(100vw - 32px))}
 <script>
 (function(){
 'use strict';
-const COLS=['projects','materials','events','tasks','vendors'];
+const COLS=['projects','materials','events','tasks','vendors','notes'];
 const VENDOR_TYPES=['고객사','구매처','외주/협력사'];
 const LS_KEY='inspector-board-v1';
 const CATEGORIES=['PC','카메라','렌즈','조명','프레임/기구','소프트웨어/라이선스','외주/서비스','기타'];
@@ -431,6 +444,8 @@ const BOARD_STATUS=PROJECT_STATUS.filter(s=>s!=='완료'); // 메인 보드에�
 const PROJECT_TONE={'검토 중':'info','진행 중':'warn','진행대기':'crit','출장대기':'trip','완료':'ok'};
 const PROJECT_DESC={'검토 중':'검토·견적 단계','진행 중':'진행 중인 과제','진행대기':'착수 대기','출장대기':'출장 대기','완료':'완료된 과제'};
 const EVENT_TYPES=['회의','납기','출장','검수','기타'];
+const NOTE_CATEGORIES=['이슈','주의사항','개선 아이디어','참고'];
+const NOTE_TONE={'이슈':'crit','주의사항':'warn','개선 아이디어':'info','참고':'gray'};
 const DOW=['일','월','화','수','목','금','토'];
 
 const ICON={
@@ -472,7 +487,7 @@ const diffDays=(a,b)=>Math.round((parseISO(a)-parseISO(b))/86400000);
 const shortDate=iso=>iso?iso.slice(5).replace('-','/'):'';
 
 const PREFS_KEY='inspector-board-prefs';
-const ui={tab:'home',detail:'',matFilter:{project:'',stage:'',q:''},projView:{group:'status',status:'',client:''},showDone:false,keepShown:new Set(),cal:(()=>{const d=new Date();return {y:d.getFullYear(),m:d.getMonth()};})(),selDay:todayISO(),layers:{events:true,projects:true,eta:true,tasks:true,order:false}};
+const ui={tab:'home',detail:'',noteFilter:{category:'',project:'',q:''},matFilter:{project:'',stage:'',q:''},projView:{group:'status',status:'',client:''},showDone:false,keepShown:new Set(),cal:(()=>{const d=new Date();return {y:d.getFullYear(),m:d.getMonth()};})(),selDay:todayISO(),layers:{events:true,projects:true,eta:true,tasks:true,order:false}};
 
 const FB_CONFIG={
   apiKey:"AIzaSyCIVpoSHXL8hEf6D8qyeTnoHWBjMrSR8PA",
@@ -485,8 +500,8 @@ const FB_CONFIG={
 const fb={auth:null,db:null,user:null,ready:false};
 
 const store={
-  mode:'local',db:null,downloads:null,loaded:{projects:false,materials:false,events:false,tasks:false,vendors:false},
-  data:{projects:[],materials:[],events:[],tasks:[],vendors:[]},
+  mode:'local',db:null,downloads:null,loaded:{projects:false,materials:false,events:false,tasks:false,vendors:false,notes:false},
+  data:{projects:[],materials:[],events:[],tasks:[],vendors:[],notes:[]},
   async init(){
     if(fb.db){ this.db=fb.db; this.mode='firebase'; this.subscribe(); this.offerMigration(); }
     else{
@@ -517,7 +532,7 @@ const store={
     let asked=false; try{ asked=sessionStorage.getItem('migrate-asked')==='1'; }catch(e){}
     if(asked) return;
     try{ sessionStorage.setItem('migrate-asked','1'); }catch(e){}
-    const parts=[['projects','프로젝트'],['tasks','할 일'],['materials','자재'],['events','일정'],['vendors','업체']].filter(([c])=>local[c]&&local[c].length).map(([c,l])=>`${l} ${local[c].length}건`).join(', ');
+    const parts=[['projects','프로젝트'],['tasks','작업'],['materials','자재'],['events','일정'],['vendors','업체']].filter(([c])=>local[c]&&local[c].length).map(([c,l])=>`${l} ${local[c].length}건`).join(', ');
     if(!await askConfirm(`이 브라우저에 저장된 데이터(${parts})가 있어요.\n클라우드로 옮겨서 모든 기기에서 볼 수 있게 할까요?`,'클라우드로 옮기기',true)) return;
     try{ await this.replaceAll(local); toast('클라우드로 옮겼어요.'); }catch(e){ toast('옮기지 못했어요. 잠시 후 다시 시도해 주세요.'); }
   },
@@ -577,11 +592,11 @@ function render(){
   const main=document.getElementById('main');
   const loading=!COLS.every(c=>store.loaded[c]);
   if(loading){ main.innerHTML='<div class="topbar"><div><h1>불러오는 중</h1><div class="sub">저장된 데이터를 가져오고 있어요.</div></div></div>'; return; }
-  main.innerHTML={home:renderHome,projects:renderProjects,materials:renderMaterials,vendors:renderVendors,more:renderMore}[ui.tab]();
+  main.innerHTML={home:renderHome,projects:renderProjects,notes:renderNotes,materials:renderMaterials,vendors:renderVendors,more:renderMore}[ui.tab]();
 }
 
 function progressHTML(pr){
-  const parts=[]; if(pr.ms.length) parts.push(`자재 ${pr.mDone}/${pr.ms.length}`); if(pr.ts.length) parts.push(`할 일 ${pr.tDone}/${pr.ts.length}`);
+  const parts=[]; if(pr.ms.length) parts.push(`자재 ${pr.mDone}/${pr.ms.length}`); if(pr.ts.length) parts.push(`작업 ${pr.tDone}/${pr.ts.length}`);
   return `<span class="prog"><span class="prog-l"><span>${parts.join(' · ')||'항목 없음'}</span><b>${pr.total?pr.pct+'%':'–'}</b></span><span class="bar"><i style="width:${pr.pct}%"></i></span></span>`;
 }
 function renderHome(){
@@ -613,7 +628,7 @@ function renderHome(){
     </section>`;
   }).join('');
   return `<div class="topbar"><div><h1>프로젝트 캘린더</h1><div class="sub">${new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'})} · 프로젝트 ${D.projects.length}건${D.projects.filter(p=>projStatus(p)==='완료').length?` · 완료 ${D.projects.filter(p=>projStatus(p)==='완료').length}건 (프로젝트 탭)`:''}</div></div>
-    <div class="actions"><button class="btn" data-action="add-task" data-day="${ui.selDay}">${ICON.plus}할 일</button><button class="btn" data-action="add-material">${ICON.plus}자재</button><button class="btn primary" data-action="add-event" data-day="${ui.selDay}">${ICON.plus}일정</button></div></div>
+    <div class="actions"><button class="btn" data-action="add-task" data-day="${ui.selDay}">${ICON.plus}작업</button><button class="btn" data-action="add-material">${ICON.plus}자재</button><button class="btn primary" data-action="add-event" data-day="${ui.selDay}">${ICON.plus}일정</button></div></div>
     ${calendarHTML()}
     <section class="home-board"><h2>프로젝트 현황</h2><div class="board">${board}</div></section>`;
 }
@@ -640,12 +655,12 @@ function renderProjects(){
       <div class="proj-head">
         <div class="proj-title"><h2>${esc(p.name)}</h2><span class="m">${[p.client,projRangeText(p),p.notes].filter(Boolean).map(esc).join(' · ')}</span></div>
         <span class="pill tone-${PROJECT_TONE[st]}">${esc(st)}${st==='진행 중'&&pr.total?' · '+pr.pct+'%':''}</span>
-        <div class="proj-tools"><button class="btn sm ghost" data-action="goto-project" data-project="${p.id}">상세${ICON.chev}</button><button class="btn sm ghost" data-action="edit-project" data-id="${p.id}" aria-label="프로젝트 수정">${ICON.edit}</button><button class="btn sm" data-action="add-task" data-project="${p.id}">${ICON.plus}할 일</button></div>
+        <div class="proj-tools"><button class="btn sm ghost" data-action="goto-project" data-project="${p.id}">상세${ICON.chev}</button><button class="btn sm ghost" data-action="edit-project" data-id="${p.id}" aria-label="프로젝트 수정">${ICON.edit}</button><button class="btn sm" data-action="add-task" data-project="${p.id}">${ICON.plus}작업</button></div>
       </div>
       <div class="proj-meta">${progressHTML(pr)}
         <button class="btn sm ghost mat-link" data-action="goto-mat" data-project="${p.id}">자재 ${pr.mDone}/${pr.ms.length} 입고${next?' · 다음 '+shortDate(next.etaDate):''}${ICON.chev}</button></div>
-      <div class="list">${shown.map(taskRowHTML).join('')||`<div class="empty small">${pr.ts.length?'남은 할 일이 없어요':'할 일을 추가해 진행률에 반영해 보세요'}</div>`}</div>
-      ${hidden?`<button class="hidden-note" data-action="show-done">완료된 할 일 ${hidden}건 보기</button>`:''}
+      <div class="list">${shown.map(taskRowHTML).join('')||`<div class="empty small">${pr.ts.length?'남은 작업이 없어요':'작업을 추가해 진행률에 반영해 보세요'}</div>`}</div>
+      ${hidden?`<button class="hidden-note" data-action="show-done">완료된 작업 ${hidden}건 보기</button>`:''}
     </section>`;};
   const groupHead=(label,n)=>`<div class="proj-group">${label}<span class="cnt">${n}건</span></div>`;
   let list=D.projects.slice();
@@ -666,14 +681,46 @@ function renderProjects(){
   const open=D.tasks.filter(t=>!t.done).length, late=D.tasks.filter(t=>!t.done&&t.dueDate&&t.dueDate<today).length, doneCnt=D.tasks.length-open;
   const clientOpts=[...new Set(D.projects.map(p=>p.client||''))].sort((a,b)=>a===''?1:b===''?-1:a.localeCompare(b)).map(c=>`<option value="${c?esc(c):'__none'}" ${pv.client===(c||'__none')?'selected':''}>${c?esc(c):'고객사 미지정'}</option>`).join('');
   const empty=D.projects.length?`<div class="panel"><div class="empty"><b>조건에 맞는 프로젝트가 없어요</b>필터를 바꿔 보세요.</div></div>`:`<div class="panel"><div class="empty"><b>등록된 프로젝트가 없어요</b>오른쪽 위 버튼으로 과제를 추가하세요.</div></div>`;
-  return `<div class="topbar"><div><h1>프로젝트 · 할 일</h1><div class="sub">프로젝트 ${D.projects.length}건 · 미완료 할 일 ${open}건${late?` · <span style="color:var(--crit)">지연 ${late}건</span>`:''}${doneCnt?` · 완료 ${doneCnt}건`:''}</div></div>
-    <div class="actions"><label class="switch"><input type="checkbox" id="showDone" data-action="toggle-show-done" ${ui.showDone?'checked':''}>완료한 할 일 표시</label><button class="btn" data-action="add-task">${ICON.plus}할 일</button><button class="btn primary" data-action="add-project">${ICON.plus}프로젝트</button></div></div>
+  return `<div class="topbar"><div><h1>프로젝트 · 작업</h1><div class="sub">프로젝트 ${D.projects.length}건 · 미완료 작업 ${open}건${late?` · <span style="color:var(--crit)">지연 ${late}건</span>`:''}${doneCnt?` · 완료 ${doneCnt}건`:''}</div></div>
+    <div class="actions"><label class="switch"><input type="checkbox" id="showDone" data-action="toggle-show-done" ${ui.showDone?'checked':''}>완료한 작업 표시</label><button class="btn" data-action="add-task">${ICON.plus}작업</button><button class="btn primary" data-action="add-project">${ICON.plus}프로젝트</button></div></div>
     <div class="filters">
       <select data-pfilter="group" aria-label="보기 방식"><option value="status" ${pv.group==='status'?'selected':''}>진행상황별 보기</option><option value="client" ${pv.group==='client'?'selected':''}>고객사별 보기</option><option value="due" ${pv.group==='due'?'selected':''}>목표일순 보기</option></select>
       <select data-pfilter="status" aria-label="상태 필터"><option value="">모든 상태</option>${PROJECT_STATUS.map(st=>`<option value="${st}" ${pv.status===st?'selected':''}>${st}</option>`).join('')}</select>
       <select data-pfilter="client" aria-label="고객사 필터"><option value="">모든 고객사</option>${clientOpts}</select>
     </div>
     <div class="proj-list">${body||empty}${orphanSec}</div>`;
+}
+
+function noteCardHTML(n,hideProject){
+  const cat=n.category||'참고';
+  return `<button class="note" data-action="edit-note" data-id="${n.id}">
+    <span class="note-h"><span class="pill tone-${NOTE_TONE[cat]||'gray'}">${esc(cat)}</span>${n.pinned?`<span class="tag">고정</span>`:''}<span class="date">${n.date?shortDate(n.date):''}</span></span>
+    <span class="note-t">${esc(n.title)}</span>
+    ${n.projectId&&!hideProject?`<span class="note-p">${esc(projName(n.projectId))}</span>`:''}
+    ${n.body?`<span class="note-b">${esc(n.body)}</span>`:''}
+    ${n.lesson?`<span class="note-l"><b>다음엔</b>${esc(n.lesson)}</span>`:''}
+  </button>`;
+}
+function renderNotes(){
+  const f=ui.noteFilter;
+  let list=D.notes.slice();
+  if(f.category) list=list.filter(n=>(n.category||'참고')===f.category);
+  if(f.project) list=list.filter(n=>n.projectId===(f.project==='__none'?'':f.project));
+  if(f.q){ const q=f.q.toLowerCase(); list=list.filter(n=>[n.title,n.body,n.lesson,n.category,projName(n.projectId)].join(' ').toLowerCase().includes(q)); }
+  list.sort((a,b)=>(!!b.pinned-!!a.pinned)||((b.date||'')<(a.date||'')?-1:(b.date||'')>(a.date||'')?1:0)||(b.createdAt||'').localeCompare(a.createdAt||''));
+  const projOpts=D.projects.map(p=>`<option value="${p.id}" ${f.project===p.id?'selected':''}>${esc(p.name)}</option>`).join('');
+  const catOpts=NOTE_CATEGORIES.map(c=>`<option value="${c}" ${f.category===c?'selected':''}>${c}</option>`).join('');
+  const body=list.length?`<div class="notes">${list.map(noteCardHTML).join('')}</div>`
+    :`<div class="panel"><div class="empty"><b>${D.notes.length?'조건에 맞는 메모가 없어요':'아직 기록한 메모가 없어요'}</b>${D.notes.length?'필터를 바꿔 보세요.':'프로젝트를 하며 겪은 이슈와 다음에 주의할 점을 남겨 두면, 비슷한 과제를 시작할 때 같은 실수를 피할 수 있어요.'}</div></div>`;
+  const byCat=NOTE_CATEGORIES.map(c=>{ const n=D.notes.filter(x=>(x.category||'참고')===c).length; return n?`${c} ${n}`:''; }).filter(Boolean).join(' · ');
+  return `<div class="topbar"><div><h1>메모</h1><div class="sub">${D.notes.length?esc(byCat):'이슈와 재발 방지 기록을 남기는 곳이에요'}</div></div>
+    <div class="actions"><button class="btn primary" data-action="add-note">${ICON.plus}메모</button></div></div>
+    <div class="filters">
+      <select data-nfilter="category"><option value="">모든 분류</option>${catOpts}</select>
+      <select data-nfilter="project"><option value="">모든 프로젝트</option><option value="__none" ${f.project==='__none'?'selected':''}>프로젝트 미지정</option>${projOpts}</select>
+      <input id="nQ" type="search" data-nfilter="q" placeholder="제목, 내용, 재발 방지 검색" value="${esc(f.q)}">
+    </div>
+    ${body}`;
 }
 
 function renderMore(){
@@ -737,21 +784,22 @@ function detailHTML(p){
   const tasks=pr.ts.slice().sort((a,b)=>(a.done-b.done)||((a.dueDate||'9')<(b.dueDate||'9')?-1:1));
   const mats=pr.ms.slice().sort((a,b)=>(isOpen(b)-isOpen(a))||(STAGES.indexOf(a.stage)-STAGES.indexOf(b.stage))||((a.etaDate||'9')<(b.etaDate||'9')?-1:1));
   const evs=D.events.filter(e=>e.projectId===p.id).sort((a,b)=>(a.start||'9')<(b.start||'9')?-1:1);
+  const notes=D.notes.filter(n=>n.projectId===p.id).sort((a,b)=>(!!b.pinned-!!a.pinned)||((b.date||'')<(a.date||'')?-1:1));
   const late=tasks.filter(t=>!t.done&&t.dueDate&&t.dueDate<today).length;
   const range=projRangeText(p);
   return `<div class="pdlg-h"><div><h2>${esc(p.name)}</h2><div class="sub">${[p.client,p.notes].filter(Boolean).map(esc).join(' · ')||'고객사 미지정'}</div></div>
-    <div class="actions"><button class="btn sm" data-action="edit-project" data-id="${p.id}">${ICON.edit}수정</button><button class="btn sm" data-action="add-event" data-project="${p.id}" data-day="${today}">${ICON.plus}일정</button><button class="btn sm" data-action="add-material" data-project="${p.id}">${ICON.plus}자재</button><button class="btn sm primary" data-action="add-task" data-project="${p.id}">${ICON.plus}할 일</button></div><button type="button" class="btn ghost sm close" data-action="pdlg-close" aria-label="닫기">✕</button></div>
+    <div class="actions"><button class="btn sm" data-action="edit-project" data-id="${p.id}">${ICON.edit}수정</button><button class="btn sm" data-action="add-event" data-project="${p.id}" data-day="${today}">${ICON.plus}일정</button><button class="btn sm" data-action="add-material" data-project="${p.id}">${ICON.plus}자재</button><button class="btn sm primary" data-action="add-task" data-project="${p.id}">${ICON.plus}작업</button></div><button type="button" class="btn ghost sm close" data-action="pdlg-close" aria-label="닫기">✕</button></div>
     <div class="pdlg-b">
     <div class="panel detail-head">
       <span class="pill tone-${PROJECT_TONE[st]}">${esc(st)}</span>
       ${progressHTML(pr)}
       <span class="kv"><span>기간</span><b>${range?esc(range):'미정'}</b></span>
       <span class="kv"><span>다음 입고</span><b class="${next?etaState(next):''}">${next?shortDate(next.etaDate)+' · '+esc(next.name):'없음'}</b></span>
-      ${late?`<span class="kv"><span>지연</span><b style="color:var(--crit)">할 일 ${late}건</b></span>`:''}
+      ${late?`<span class="kv"><span>지연</span><b style="color:var(--crit)">작업 ${late}건</b></span>`:''}
     </div>
     <div class="detail-cols">
-      <div class="panel"><div class="panel-h"><h2>할 일</h2><span class="cnt">${pr.tDone}/${pr.ts.length} 완료</span></div>
-        <div class="list">${tasks.map(taskRowHTML).join('')||`<div class="empty small">할 일이 없어요. 오른쪽 위 "+ 할 일"로 추가하세요.</div>`}</div></div>
+      <div class="panel"><div class="panel-h"><h2>작업</h2><span class="cnt">${pr.tDone}/${pr.ts.length} 완료</span></div>
+        <div class="list">${tasks.map(taskRowHTML).join('')||`<div class="empty small">작업이 없어요. 오른쪽 위 "+ 작업"로 추가하세요.</div>`}</div></div>
       <div class="panel"><div class="panel-h"><h2>자재</h2><span class="cnt">${pr.mDone}/${pr.ms.length} 입고</span></div>
         <div class="list">${mats.map(m=>matRowHTML(m,true)).join('')||`<div class="empty small">자재가 없어요. 오른쪽 위 "+ 자재"로 추가하세요.</div>`}</div></div>
     </div>
@@ -760,6 +808,8 @@ function detailHTML(p){
         <span class="when">${shortDate(e.start)}${e.end&&e.end!==e.start?' ~ '+shortDate(e.end):''}</span>
         <span class="name"><b>${esc(e.title)}</b>${e.memo?`<small>${esc(e.memo)}</small>`:''}</span>
         <span class="pill tone-event">${ICON[EVENT_ICON[e.type]||'note']}${esc(e.type||'일정')}</span></button>`).join('')||`<div class="empty small">이 프로젝트에 연결된 일정이 없어요.</div>`}</div></div>
+    <div class="panel detail-notes"><div class="panel-h"><h2>메모</h2><button class="btn sm ghost" data-action="add-note" data-project="${p.id}">${ICON.plus}메모</button></div>
+      ${notes.length?`<div class="notes" style="padding:14px">${notes.map(n=>noteCardHTML(n,true)).join('')}</div>`:`<div class="empty small">이 프로젝트의 이슈나 주의할 점을 남겨 두면 다음 과제에 도움이 돼요.</div>`}</div>
     </div>`;
 }
 
@@ -803,7 +853,7 @@ function calendarItems(y,m){
   if(ui.layers.events) for(const e of D.events){ if(!e.start) continue; const end=e.end&&e.end>=e.start?e.end:e.start; let d=e.start,i=0; while(d<=end&&i<120){ add(d,{kind:'event',key:'event:'+e.id,span:end>e.start,start:e.start,end,icon:EVENT_ICON[e.type]||'note',tone:'event',label:e.title,sub:(e.type||'일정')+(e.projectId?' · '+projName(e.projectId):''),action:'edit-event',id:e.id}); d=addDays(d,1); i++; } }
   if(ui.layers.projects) for(const p of D.projects){ const {start,end}=projDates(p); if(!end) continue; const st=projStatus(p); const sub='프로젝트 '+st+' · '+(start!==end?shortDate(start)+' ~ '+shortDate(end):(st!=='완료'&&end<today?'목표일 지남':'목표일')); let d=start,i=0; while(d<=end&&i<120){ add(d,{kind:'project',key:'project:'+p.id,span:start!==end,start,end,icon:'target',tone:PROJECT_TONE[st],label:p.name,sub,action:'edit-project',id:p.id}); d=addDays(d,1); i++; } }
   if(ui.layers.eta) for(const mt of D.materials){ if(!mt.etaDate) continue; const tone=!isOpen(mt)?'ok':(mt.etaDate<today?'crit':'accent'); add(mt.etaDate,{kind:'eta',icon:'box',tone,label:mt.name,sub:(isOpen(mt)?(mt.etaDate<today?'입고 지연':'입고 예정'):'입고 완료')+' · '+projName(mt.projectId),action:'edit-material',id:mt.id}); }
-  if(ui.layers.tasks) for(const t of D.tasks){ if(!t.dueDate) continue; const tone=t.done?'ok':(t.dueDate<today?'crit':'task'); add(t.dueDate,{kind:'task',icon:'check',tone,label:t.title,sub:(t.done?'완료':(t.dueDate<today?'할 일 지연':'할 일 마감'))+(t.projectId?' · '+projName(t.projectId):''),action:'edit-task',id:t.id}); }
+  if(ui.layers.tasks) for(const t of D.tasks){ if(!t.dueDate) continue; const tone=t.done?'ok':(t.dueDate<today?'crit':'task'); add(t.dueDate,{kind:'task',icon:'check',tone,label:t.title,sub:(t.done?'완료':(t.dueDate<today?'작업 지연':'작업 마감'))+(t.projectId?' · '+projName(t.projectId):''),action:'edit-task',id:t.id}); }
   if(ui.layers.order) for(const mt of D.materials){ if(!mt.orderDate) continue; add(mt.orderDate,{kind:'order',icon:'cart',tone:'gray',label:mt.name,sub:'발주 · '+projName(mt.projectId),action:'edit-material',id:mt.id}); }
   return map;
 }
@@ -840,16 +890,16 @@ function calendarHTML(){
   }).join('');
   const sel=ui.selDay, selItems=items.get(sel)||[], sd=parseISO(sel);
   const dayList=selItems.length?selItems.map(it=>`<button class="day-item" data-action="${it.action}" data-id="${it.id}" style="--c:var(--${it.tone})"><i></i><span><span class="t">${ICON[it.icon]||''}${esc(it.label)}</span><br><span class="m">${esc(it.sub)}</span></span></button>`).join('')
-    :`<div class="empty"><b>${sel===today?'오늘은':'이 날은'} 비어 있어요</b>위의 + 할 일, + 일정 버튼으로 이 날짜에 추가할 수 있어요.</div>`;
-  const dayTitle=sel===today?'오늘 할 일':`${sd.getMonth()+1}/${sd.getDate()} (${DOW[sd.getDay()]}) 할 일`;
+    :`<div class="empty"><b>${sel===today?'오늘은':'이 날은'} 비어 있어요</b>위의 + 작업, + 일정 버튼으로 이 날짜에 추가할 수 있어요.</div>`;
+  const dayTitle=sel===today?'오늘 작업':`${sd.getMonth()+1}/${sd.getDate()} (${DOW[sd.getDay()]}) 작업`;
   const layer=(k,l)=>`<button class="layer" data-action="layer" data-layer="${k}" aria-pressed="${ui.layers[k]}"><i></i>${l}</button>`;
   return `<div class="cal-toolbar">
       <div class="mo"><button class="btn sm" data-action="cal-prev" aria-label="이전 달">‹</button><h2>${y}.${pad(m+1)}</h2><button class="btn sm" data-action="cal-next" aria-label="다음 달">›</button><button class="btn sm ghost" data-action="cal-today">오늘</button></div>
-      <div class="layers">${layer('events','일정')}${layer('projects','프로젝트')}${layer('eta','입고예정')}${layer('tasks','할 일')}${layer('order','발주일')}</div>
+      <div class="layers">${layer('events','일정')}${layer('projects','프로젝트')}${layer('eta','입고예정')}${layer('tasks','작업')}${layer('order','발주일')}</div>
     </div>
     <div class="cal-wrap">
       <div class="cal"><div class="dow">${DOW.map(d=>`<span>${d}</span>`).join('')}</div><div class="grid">${grid}</div></div>
-      <div class="day-col"><div class="panel day-panel"><div class="panel-h"><h2>${dayTitle}</h2><span class="r"><button class="btn sm ghost" data-action="add-task" data-day="${sel}">${ICON.plus}할 일</button><button class="btn sm ghost" data-action="add-event" data-day="${sel}">${ICON.plus}일정</button></span></div><div class="list">${dayList}</div></div></div>
+      <div class="day-col"><div class="panel day-panel"><div class="panel-h"><h2>${dayTitle}</h2><span class="r"><button class="btn sm ghost" data-action="add-task" data-day="${sel}">${ICON.plus}작업</button><button class="btn sm ghost" data-action="add-event" data-day="${sel}">${ICON.plus}일정</button></span></div><div class="list">${dayList}</div></div></div>
     </div>`;
 }
 
@@ -1006,15 +1056,15 @@ function vendorForm(v){
 }
 function taskForm(t,preset){
   const isNew=!t; t=t||Object.assign({},preset||{});
-  openForm({title:isNew?'할 일 추가':'할 일 수정',
+  openForm({title:isNew?'작업 추가':'작업 수정',
     fields:[
-      {key:'title',label:'할 일',value:t.title,required:true,span:true,placeholder:'예: 광학계 사양서 검토 / 발주 승인 요청'},
+      {key:'title',label:'작업',value:t.title,required:true,span:true,placeholder:'예: 광학계 사양서 검토 / 발주 승인 요청'},
       ...projectFields(t.projectId),
       {key:'dueDate',label:'마감일',type:'date',value:t.dueDate},
       {key:'done',label:'상태',type:'select',options:[['0','미완료'],['1','완료']],value:t.done?'1':'0'},
       {key:'notes',label:'메모',type:'textarea',value:t.notes,span:true}],
-    onSubmit:async v=>{ await resolveProject(v); v.done=v.done==='1'; await store.put('tasks',Object.assign({},t,v,{id:t.id||uid(),createdAt:t.createdAt||new Date().toISOString(),doneAt:v.done?(t.doneAt||new Date().toISOString()):null})); toast(isNew?'할 일을 추가했어요.':'저장했어요.'); },
-    onDelete:isNew?null:async()=>{ if(!await askConfirm(`"${t.title}" 할 일을 삭제할까요?`)) return; await store.remove('tasks',t.id); dlg.close(); toast('삭제했어요.'); }
+    onSubmit:async v=>{ await resolveProject(v); v.done=v.done==='1'; await store.put('tasks',Object.assign({},t,v,{id:t.id||uid(),createdAt:t.createdAt||new Date().toISOString(),doneAt:v.done?(t.doneAt||new Date().toISOString()):null})); toast(isNew?'작업을 추가했어요.':'저장했어요.'); },
+    onDelete:isNew?null:async()=>{ if(!await askConfirm(`"${t.title}" 작업을 삭제할까요?`)) return; await store.remove('tasks',t.id); dlg.close(); toast('삭제했어요.'); }
   });
 }
 async function toggleMaterial(id){
@@ -1032,6 +1082,24 @@ async function toggleTask(id){
   if(done) ui.keepShown.add(id); else ui.keepShown.delete(id); // 방금 완료한 항목은 화면을 떠나기 전까지 보이게 둔다
   try{ await store.put('tasks',Object.assign({},t,{done,doneAt:done?new Date().toISOString():null})); }catch(err){ toast('저장하지 못했어요. 잠시 후 다시 시도해 주세요.'); render(); }
 }
+function noteForm(n,preset){
+  const isNew=!n; n=n||Object.assign({},preset||{});
+  openForm({title:isNew?'메모 추가':'메모 수정',
+    help:isNew?'무슨 일이 있었는지와, 다음에 같은 일을 겪지 않으려면 어떻게 할지를 함께 남겨 두세요.':'',
+    fields:[
+      {key:'title',label:'제목',value:n.title,required:true,span:true,placeholder:'예: 렌즈 워킹디스턴스 부족으로 재발주'},
+      {key:'category',label:'분류',type:'select',options:NOTE_CATEGORIES,value:n.category||'이슈'},
+      {key:'date',label:'날짜',type:'date',value:n.date||todayISO()},
+      ...projectFields(n.projectId),
+      {key:'body',label:'무슨 일이 있었나요',type:'textarea',value:n.body,span:true,placeholder:'상황과 원인을 적어 두세요.'},
+      {key:'lesson',label:'다음엔 이렇게 (재발 방지)',type:'textarea',value:n.lesson,span:true,placeholder:'예: 발주 전 워킹디스턴스를 도면으로 재확인한다.'},
+      {key:'pinned',label:'목록 위에 고정',type:'select',options:[['0','고정 안 함'],['1','고정']],value:n.pinned?'1':'0'}],
+    onSubmit:async v=>{ await resolveProject(v); v.pinned=v.pinned==='1';
+      await store.put('notes',Object.assign({},n,v,{id:n.id||uid(),createdAt:n.createdAt||new Date().toISOString(),updatedAt:new Date().toISOString()}));
+      toast(isNew?'메모를 남겼어요.':'저장했어요.'); },
+    onDelete:isNew?null:async()=>{ if(!await askConfirm(`"${n.title}" 메모를 삭제할까요?`)) return; await store.remove('notes',n.id); dlg.close(); toast('삭제했어요.'); }
+  });
+}
 function importForm(){
   openForm({title:'백업 가져오기',help:'내보내기로 받은 JSON 내용을 붙여 넣으세요. 현재 데이터는 모두 교체됩니다.',
     fields:[{key:'json',label:'JSON',type:'textarea',value:'',span:true,required:true}],submitLabel:'교체하기',
@@ -1041,7 +1109,7 @@ function importForm(){
   });
 }
 async function exportData(){
-  const json=JSON.stringify({exportedAt:new Date().toISOString(),projects:D.projects,materials:D.materials,events:D.events,tasks:D.tasks,vendors:D.vendors},null,2);
+  const json=JSON.stringify({exportedAt:new Date().toISOString(),projects:D.projects,materials:D.materials,events:D.events,tasks:D.tasks,vendors:D.vendors,notes:D.notes},null,2);
   const name='inspector-board-'+todayISO()+'.json';
   if(store.downloads){ try{ await store.downloads.save({filename:name,data:json}); toast('백업 파일을 저장했어요.'); return; }catch(err){ if(err&&err.code==='declined') return; } }
   try{ await navigator.clipboard.writeText(json); toast('백업 JSON을 클립보드에 복사했어요.'); }
@@ -1106,6 +1174,8 @@ document.addEventListener('click',e=>{
     case 'noop': e.stopPropagation(); break;
     case 'edit-task': { if(e.target.closest('.chk')) break; const t=D.tasks.find(x=>x.id===id); if(t) taskForm(t); break; }
     case 'toggle-task': toggleTask(id); break;
+    case 'add-note': noteForm(null,{projectId:el.dataset.project||''}); break;
+    case 'edit-note': { const n=D.notes.find(x=>x.id===id); if(n) noteForm(n); break; }
     case 'add-project': projectForm(null,{status:el.dataset.status||'진행 중'}); break;
     case 'edit-project': projectForm(projById(id)); break;
     case 'add-material': materialForm(null,{projectId:el.dataset.project||''}); break;
@@ -1127,6 +1197,15 @@ document.addEventListener('click',e=>{
   }
 });
 function onFilter(e){
+  const nf=e.target.dataset&&e.target.dataset.nfilter;
+  if(nf){
+    const isSel=e.target.tagName==='SELECT';
+    if((isSel&&e.type!=='change')||(!isSel&&e.type!=='input')) return;
+    ui.noteFilter[nf]=e.target.value;
+    if(nf==='q'){ clearTimeout(ui._nqh); ui._nqh=setTimeout(()=>{ const pos=e.target.selectionStart; render(); const i=document.getElementById('nQ'); if(i){ i.focus(); try{ i.setSelectionRange(pos,pos); }catch(_){} } },160); }
+    else render();
+    return;
+  }
   const pf=e.target.dataset&&e.target.dataset.pfilter;
   if(pf){ if(e.type!=='change') return; ui.projView[pf]=e.target.value; savePrefs(); render(); return; }
   const f=e.target.dataset&&e.target.dataset.filter; if(!f) return;
